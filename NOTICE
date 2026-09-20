@@ -1,0 +1,17 @@
+RobPelo
+Copyright 2026 RobPelo contributors
+
+This product is licensed under the Apache License, Version 2.0.
+
+Portions of the Affernet interoperability implementation and power-to-speed
+calculation are adapted from OpenRide:
+
+  OpenRide
+  Copyright 2026 The OpenRide Authors
+  https://github.com/digitalducktape/OpenRide
+
+See third_party/openride/ for the upstream license, notice, and pinned commit.
+
+Peloton and Peloton Bike are trademarks of Peloton Interactive, Inc. They are
+used descriptively to identify compatible hardware. RobPelo is not affiliated
+with, authorized, sponsored, or endorsed by Peloton Interactive, Inc.

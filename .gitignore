@@ -1,0 +1,29 @@
+.gradle/
+.idea/
+local.properties
+**/build/
+*.iml
+.DS_Store
+
+# Android signing material and local release configuration
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# Locally produced install artifacts
+*.apk
+*.aab
+*.apks
+
+# Per-device captures may contain serial numbers or local device state.
+# Keep only the deliberately sanitized summaries.
+device-baseline/*
+!device-baseline/README.md
+device-tests/*
+!device-tests/README.md
+
+# Local logs and captures
+*.log
+captures/
+screenshots/

@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">RobPelo</string>
+    <string name="home_title">READY TO RIDE?</string>
+    <string name="home_subtitle">Choose an experience</string>
+    <string name="diagnostics">Diagnostics</string>
+    <string name="probe_title">Bike Telemetry Probe</string>
+    <string name="probe_safety">Read-only Affernet diagnostics. No bike control commands.</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="state_format">STATE  %1$s</string>
+    <string name="cadence_format">CADENCE  %1$s rpm</string>
+    <string name="resistance_format">RESISTANCE  %1$s</string>
+    <string name="output_format">OUTPUT  %1$s W</string>
+    <string name="raw_power_format">RAW POWER  %1$s</string>
+    <string name="frames_format">FRAMES  %1$d</string>
+    <string name="last_update_format">LAST UPDATE  %1$s</string>
+    <string name="open_just_ride">Open Just Ride</string>
+    <string name="open_netflix">Netflix + HUD</string>
+    <string name="stop_hud">Stop HUD</string>
+    <string name="overlay_permission_required">Allow RobPelo to display over other apps, then return here.</string>
+    <string name="netflix_unavailable">Netflix is not installed or enabled.</string>
+    <string name="just_ride_title">JUST RIDE</string>
+    <string name="elapsed_format">TIME  %1$s</string>
+    <string name="speed_format">SPEED  %1$.1f mph</string>
+    <string name="distance_format">DISTANCE  %1$.2f mi</string>
+    <string name="total_output_format">TOTAL OUTPUT  %1$.1f kJ</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="end_ride">End Ride</string>
+    <string name="ride_notification_title">RobPelo ride active</string>
+    <string name="ride_notification_active">Bike telemetry is active</string>
+    <string name="hud_close">Close</string>
+</resources>
