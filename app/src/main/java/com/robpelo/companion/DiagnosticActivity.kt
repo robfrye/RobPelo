@@ -41,7 +41,7 @@ class DiagnosticActivity : Activity(), AffernetTelemetryClient.Listener {
         super.onResume()
         if (
             launchNetflixAfterOverlayGrant &&
-            NetflixHudLauncher.hasOverlayPermission(this)
+            VideoHudLauncher.hasOverlayPermission(this)
         ) {
             launchNetflixAfterOverlayGrant = false
             launchNetflixWithHud()
@@ -192,21 +192,21 @@ class DiagnosticActivity : Activity(), AffernetTelemetryClient.Listener {
         (value * resources.displayMetrics.density).toInt()
 
     private fun requestNetflixWithHud() {
-        if (!NetflixHudLauncher.hasOverlayPermission(this)) {
+        if (!VideoHudLauncher.hasOverlayPermission(this)) {
             launchNetflixAfterOverlayGrant = true
             Toast.makeText(
                 this,
                 R.string.overlay_permission_required,
                 Toast.LENGTH_LONG,
             ).show()
-            NetflixHudLauncher.openOverlaySettings(this)
+            VideoHudLauncher.openOverlaySettings(this)
             return
         }
         launchNetflixWithHud()
     }
 
     private fun launchNetflixWithHud() {
-        if (!NetflixHudLauncher.launch(this)) {
+        if (!VideoHudLauncher.launchNetflix(this)) {
             Toast.makeText(this, R.string.netflix_unavailable, Toast.LENGTH_LONG).show()
         }
     }

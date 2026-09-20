@@ -11,8 +11,8 @@ android {
         applicationId = "com.robpelo.companion"
         minSdk = 30
         targetSdk = 34
-        versionCode = 10
-        versionName = "0.4.6-home"
+        versionCode = 14
+        versionName = "0.6.2-firefox-tab-reuse"
 
     }
 
@@ -41,5 +41,6 @@ android {
 }
 
 dependencies {
+    implementation("androidx.core:core:1.13.1")
     testImplementation("junit:junit:4.13.2")
 }

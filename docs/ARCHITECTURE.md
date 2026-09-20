@@ -1,6 +1,7 @@
 # Peloton Companion Architecture Proposal
 
-Status: implemented through Stage 4 and validated on the target device.
+Status: implemented through Stage 4, including Firefox-based YouTube + HUD, and
+validated on the target device.
 
 This design is based on the connected `PLTN-RB1VQ` running Android 11/API 30
 and Peloton build `RQ.260424.A`. It deliberately defers launcher replacement
@@ -69,6 +70,12 @@ Peloton Companion APK
 |
 +-- ExternalAppLauncher
       Launches Netflix and future allowlisted applications
+|
++-- FirefoxUpdater
+      Checks Mozilla daily while HOME is active
+      Downloads only after user action
+      Verifies package, SDK, version, and signing certificate
+      Hands the APK to Android's confirmation UI
 ```
 
 This remains one application and one process. The internal boundaries make
@@ -372,6 +379,7 @@ Initial tiles:
 
 - Just Ride
 - Netflix
+- YouTube in Firefox
 
 Utility actions:
 
@@ -426,11 +434,38 @@ Do not request:
 - root or shell privileges;
 - accessibility-service access;
 - device-admin access;
-- package install/uninstall permission;
+- package uninstall permission;
 - write-settings or secure-settings permission;
 - storage permission;
 - Bluetooth/location permission until heart-rate support is actually added;
 - Peloton subscription or signature permissions.
+
+Firefox updating requires `INTERNET` and `REQUEST_INSTALL_PACKAGES`. The latter
+is used only to hand a verified Firefox APK to Android's user-confirmed package
+installer; RobPelo cannot install silently.
+
+## Firefox update checks
+
+`FirefoxUpdater` checks Mozilla's official stable-version JSON feed when HOME
+is visible and the previous successful check is at least 24 hours old. It does
+not register a boot receiver, schedule background work, wake the device, or
+download an APK during a periodic check.
+
+If a newer version is available, HOME displays a notice and changes the update
+button label. Download begins only after a user tap.
+
+Before opening Android's installer, the updater verifies:
+
+- package name is exactly `org.mozilla.firefox`;
+- candidate version code is greater than the installed version;
+- candidate minimum SDK is supported;
+- candidate signer SHA-256 set exactly matches installed Firefox;
+- download size does not exceed 250 MB.
+
+The APK is fetched only over HTTPS from Mozilla's official archive and stored
+under RobPelo's private cache. A narrow `FileProvider` grants the Android
+package installer temporary read access. Temporary files are deleted after
+failed verification and can be cleared with RobPelo's normal app data.
 
 ## Dependency policy
 

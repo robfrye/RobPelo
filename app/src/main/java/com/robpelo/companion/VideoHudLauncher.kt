@@ -6,7 +6,7 @@ import android.net.Uri
 import android.provider.Settings
 import com.robpelo.companion.ride.RideTelemetryService
 
-object NetflixHudLauncher {
+object VideoHudLauncher {
     fun hasOverlayPermission(activity: Activity): Boolean =
         Settings.canDrawOverlays(activity)
 
@@ -19,13 +19,22 @@ object NetflixHudLauncher {
         )
     }
 
-    fun launch(activity: Activity): Boolean {
+    fun launchNetflix(activity: Activity): Boolean =
+        launchWithHud(activity) { ExternalAppLauncher.launchNetflix(activity) }
+
+    fun launchYouTube(activity: Activity): Boolean =
+        launchWithHud(activity) { ExternalAppLauncher.launchYouTubeInFirefox(activity) }
+
+    private fun launchWithHud(
+        activity: Activity,
+        launchDestination: () -> Boolean,
+    ): Boolean {
         activity.startForegroundService(
             Intent(activity, RideTelemetryService::class.java).apply {
                 action = RideTelemetryService.ACTION_START_HUD
             },
         )
-        if (ExternalAppLauncher.launchNetflix(activity)) {
+        if (launchDestination()) {
             return true
         }
 
@@ -37,4 +46,3 @@ object NetflixHudLauncher {
         return false
     }
 }
-

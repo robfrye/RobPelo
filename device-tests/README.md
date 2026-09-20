@@ -65,7 +65,8 @@ but are intentionally excluded from Git.
 - Final default HOME: `com.robpelo.companion/.HomeActivity`.
 - Final at-rest state has no HUD window, foreground ride service, or companion
   Affernet binding.
-- Seven unit tests pass: five ride-session tests and two power-scaling tests.
+- Twelve unit tests pass: five ride-session tests, two power-scaling tests, and
+  five Firefox-version/update-availability tests.
 
 ## Observed platform behavior
 
@@ -78,6 +79,48 @@ but are intentionally excluded from Git.
 - Peloton's own subscription/activation banner can appear over third-party
   activities. RobPelo does not disable or modify the Peloton component that
   owns that banner.
+
+## YouTube in Firefox
+
+- Final tested RobPelo version: `0.6.2-firefox-tab-reuse`.
+- The YouTube tile opened `https://m.youtube.com` explicitly in
+  `org.mozilla.firefox`.
+- Firefox became the foreground application.
+- The RobPelo telemetry HUD remained visible and non-focusable above Firefox.
+- Closing the HUD removed the overlay, foreground service, and Affernet
+  binding.
+- Pressing Home returned to RobPelo.
+- Firefox's direct single-task activity and Android browser reuse hint were
+  verified to keep the tab count unchanged across repeated YouTube launches.
+- The earlier generic URL-intent approach was rejected because Firefox created
+  one additional tab per launch.
+
+## Firefox update
+
+- Updated Firefox from 134.0 (`versionCode=2016064978`) to Mozilla's official
+  arm64 Firefox 156.0 (`versionCode=2016183650`).
+- The package remained `org.mozilla.firefox`.
+- The installed and candidate certificate SHA-256 digests matched.
+- The Firefox data inode remained unchanged, confirming an in-place update.
+- Firefox launched without a crash after the update.
+- YouTube and the RobPelo HUD continued to work.
+
+## On-device Firefox update checks
+
+- Installed RobPelo version: `0.6.1-firefox-installer`.
+- RobPelo fetched Mozilla's stable mobile-version feed from HOME.
+- The UI correctly reported `Firefox 156.0 is current`.
+- Periodic checks are limited to once every 24 hours while HOME is opened.
+- No APK is downloaded unless an available-update button is tapped.
+- The Android unknown-source app-op remained at its default value because no
+  installation was needed.
+- The future-update installer path is implemented but cannot be exercised until
+  Mozilla publishes a version newer than 156.0.
+- A missing Firefox installation is treated as an available install and is
+  authenticated against Mozilla's pinned release certificate.
+- The missing-Firefox decision path is unit tested; the full first-install
+  package-installer flow was not destructively tested because Firefox was
+  already installed on the reference bike.
 
 ## Reboot validation
 

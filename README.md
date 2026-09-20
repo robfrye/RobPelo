@@ -10,6 +10,7 @@ It provides:
 - live cadence, resistance, and output;
 - locally calculated speed, elapsed time, distance, and total output;
 - Netflix launching with a compact telemetry HUD;
+- YouTube in Firefox with the same telemetry HUD;
 - temporary access to the stock Peloton experience without changing the default
   HOME;
 - direct access to Android Settings from the HOME utility row.
@@ -114,6 +115,51 @@ app/build/outputs/apk/debug/app-debug.apk
 The Gradle Wrapper is included, so a separate Gradle installation is not
 required.
 
+## Keep Firefox up to date
+
+If Firefox is absent, RobPelo offers to install Mozilla's current official
+arm64 release. The tested bike originally contained Firefox 134.0; it was
+updated in place to Firefox 156.0 with its existing data preserved.
+
+RobPelo checks Mozilla's stable release feed at most once every 24 hours when
+the HOME screen is opened. It does not wake the bike or download an APK in the
+background.
+
+When an update is available:
+
+1. A message appears below the utility buttons.
+2. **Check Firefox Updates** changes to **Update Firefox _version_**.
+3. The APK is downloaded only after that button is tapped.
+4. RobPelo verifies the package, version, Android requirement, and Mozilla
+   signing certificate.
+5. Android's package installer asks for confirmation.
+
+The first installation initiated by RobPelo requires enabling **Allow from this
+source** for RobPelo. Updates are never installed silently.
+
+The Mac-side updater remains available as a fallback:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+./scripts/update-firefox.sh
+```
+
+The script:
+
+- accepts exactly one authorized ADB device unless `ANDROID_SERIAL` is set;
+- reads the current stable version from Mozilla;
+- downloads only from `archive.mozilla.org`;
+- requires the package to remain `org.mozilla.firefox`;
+- checks minimum SDK and version code;
+- requires Mozilla's pinned release signing certificate;
+- also requires a match with installed Firefox when updating;
+- performs an in-place `adb install -r`;
+- removes its temporary APK copies.
+
+Run the script before distributing a new RobPelo release or if the on-device
+installer cannot complete.
+
 ## Check your bike before installing
 
 Connect exactly one intended Android device and run:
@@ -176,6 +222,9 @@ cadence, resistance, and output respond while pedaling.
 The **Peloton Home** button opens the stock Peloton activation/home experience
 temporarily. It does not change the selected default HOME; pressing Home
 returns to RobPelo.
+
+The **YouTube + HUD** button reuses RobPelo's existing Firefox/YouTube tab
+instead of creating a new tab on every launch.
 
 ### Enable the Netflix HUD
 
@@ -323,6 +372,7 @@ Architecture and implementation details:
 
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Existing-project evaluation](./docs/EXISTING_PROJECTS.md)
+- [Streaming-app compatibility](./docs/STREAMING_APPS.md)
 - [Rollback procedure](./docs/ROLLBACK.md)
 - [OpenRide attribution](./third_party/openride/UPSTREAM.md)
 
