@@ -11,8 +11,8 @@ android {
         applicationId = "com.robpelo.companion"
         minSdk = 30
         targetSdk = 34
-        versionCode = 6
-        versionName = "0.4.2-home"
+        versionCode = 10
+        versionName = "0.4.6-home"
 
     }
 

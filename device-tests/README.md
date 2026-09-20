@@ -52,8 +52,16 @@ but are intentionally excluded from Git.
 - The stock Peloton HOME was restored successfully.
 - RobPelo was selected again after rollback validation.
 - Both Just Ride and Netflix + HUD tiles work from RobPelo HOME.
+- The Peloton Home utility button opens
+  `com.peloton.activity/com.peloton.activation.ActivationActivity`.
+- Opening Peloton does not change the default HOME; pressing Home returns to
+  RobPelo.
+- The Settings utility button opens
+  `com.android.settings/.homepage.SettingsHomepageActivity`.
+- Opening Settings does not change the default HOME; pressing Home returns to
+  RobPelo.
 - Ending each experience removed its service and Affernet binding.
-- The final corrected build `0.4.2-home` was installed and smoke-tested.
+- The final corrected build `0.4.5-home` was installed and smoke-tested.
 - Final default HOME: `com.robpelo.companion/.HomeActivity`.
 - Final at-rest state has no HUD window, foreground ride service, or companion
   Affernet binding.
@@ -70,3 +78,22 @@ but are intentionally excluded from Git.
 - Peloton's own subscription/activation banner can appear over third-party
   activities. RobPelo does not disable or modify the Peloton component that
   owns that banner.
+
+## Reboot validation
+
+A normal `adb reboot` was tested after RobPelo became the default HOME:
+
+- Android completed boot successfully.
+- RobPelo remained the resolved default HOME.
+- `HomeActivity` became the foreground activity automatically.
+- Overlay access remained granted.
+- No ride service or Affernet connection started at boot.
+- The yellow Peloton subscription banner was absent at 15 seconds, 75 seconds,
+  and approximately three minutes after boot.
+- The Peloton activity process had restarted by the 75-second check, but its
+  visible subscription notification had not returned.
+- The banner remained absent after opening Just Ride.
+
+This shows that a normal reboot clears the current transient notification state.
+It does not prove that Peloton will never post the notification again after a
+later account or subscription refresh.

@@ -55,14 +55,47 @@ class HomeActivity : Activity() {
         }, marginLayoutParams(leftDp = 28))
         root.addView(tiles, marginLayoutParams(topDp = 48))
 
-        root.addView(Button(this).apply {
+        val utilities = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+        }
+        utilities.addView(Button(this).apply {
             text = getString(R.string.diagnostics)
             minWidth = dp(220)
             minHeight = dp(58)
             setOnClickListener {
                 startActivity(Intent(this@HomeActivity, DiagnosticActivity::class.java))
             }
-        }, marginLayoutParams(topDp = 40))
+        })
+        utilities.addView(Button(this).apply {
+            text = getString(R.string.open_peloton)
+            minWidth = dp(220)
+            minHeight = dp(58)
+            setOnClickListener {
+                if (!ExternalAppLauncher.launchPeloton(this@HomeActivity)) {
+                    Toast.makeText(
+                        this@HomeActivity,
+                        R.string.peloton_launcher_unavailable,
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+        }, marginLayoutParams(leftDp = 24))
+        utilities.addView(Button(this).apply {
+            text = getString(R.string.open_settings)
+            minWidth = dp(220)
+            minHeight = dp(58)
+            setOnClickListener {
+                if (!ExternalAppLauncher.launchSettings(this@HomeActivity)) {
+                    Toast.makeText(
+                        this@HomeActivity,
+                        R.string.settings_unavailable,
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+        }, marginLayoutParams(leftDp = 24))
+        root.addView(utilities, marginLayoutParams(topDp = 40))
         return root
     }
 
@@ -130,4 +163,3 @@ class HomeActivity : Activity() {
     private fun dp(value: Int): Int =
         (value * resources.displayMetrics.density).toInt()
 }
-

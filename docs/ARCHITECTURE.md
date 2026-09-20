@@ -373,6 +373,14 @@ Initial tiles:
 - Just Ride
 - Netflix
 
+Utility actions:
+
+- Diagnostics
+- Peloton Home, which temporarily opens the stock
+  `com.peloton.activation.ActivationActivity` without changing the default HOME
+- Settings, which opens Android's standard settings homepage without changing
+  the default HOME
+
 Future apps can be added through a small compile-time allowlist. Avoid a
 general-purpose app drawer until there is a concrete need.
 

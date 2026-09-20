@@ -3,6 +3,10 @@
     <string name="home_title">READY TO RIDE?</string>
     <string name="home_subtitle">Choose an experience</string>
     <string name="diagnostics">Diagnostics</string>
+    <string name="open_peloton">Peloton Home</string>
+    <string name="peloton_launcher_unavailable">The Peloton launcher is not available.</string>
+    <string name="open_settings">Settings</string>
+    <string name="settings_unavailable">Android Settings is not available.</string>
     <string name="probe_title">Bike Telemetry Probe</string>
     <string name="probe_safety">Read-only Affernet diagnostics. No bike control commands.</string>
     <string name="connect">Connect</string>

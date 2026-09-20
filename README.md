@@ -9,7 +9,10 @@ It provides:
 - a standalone Just Ride experience;
 - live cadence, resistance, and output;
 - locally calculated speed, elapsed time, distance, and total output;
-- Netflix launching with a compact telemetry HUD.
+- Netflix launching with a compact telemetry HUD;
+- temporary access to the stock Peloton experience without changing the default
+  HOME;
+- direct access to Android Settings from the HOME utility row.
 
 RobPelo runs as a normal Android application. It does not require root,
 bootloader unlocking, firmware modification, or replacement of Peloton system
@@ -170,6 +173,10 @@ adb shell am start -n com.robpelo.companion/.HomeActivity
 Test **Diagnostics** and **Just Ride** before changing HOME. Confirm that
 cadence, resistance, and output respond while pedaling.
 
+The **Peloton Home** button opens the stock Peloton activation/home experience
+temporarily. It does not change the selected default HOME; pressing Home
+returns to RobPelo.
+
 ### Enable the Netflix HUD
 
 1. Open RobPelo.
@@ -207,6 +214,21 @@ com.robpelo.companion/.HomeActivity
 
 Adding a new HOME-capable APK may temporarily show Android's launcher chooser
 until a default is selected. This is normal.
+
+## Startup behavior
+
+Cold-boot behavior has been tested on the reference bike:
+
+- the RobPelo HOME selection persisted across a normal reboot;
+- RobPelo opened automatically after Android finished booting;
+- no menu navigation was required;
+- overlay access remained granted;
+- the ride service and telemetry connection did not start until requested.
+
+The Peloton subscription banner was absent after boot, remained absent after
+the Peloton application process restarted, and was still absent after several
+minutes and a Just Ride launch. A later Peloton subscription refresh could
+still recreate it.
 
 ## Restore the stock Peloton HOME
 
@@ -284,7 +306,10 @@ RobPelo as allowed under **Display over other apps**.
 
 Peloton's own system software may display its subscription/activation banner
 over third-party activities. RobPelo intentionally does not disable or modify
-the Peloton component responsible for that banner.
+the Peloton component responsible for that banner. See the
+[upsell-overlay investigation](./docs/PELOTON_UPSELL_OVERLAY.md) for why normal
+overlay controls cannot hide it and which options remain. A normal reboot
+cleared the banner during testing and is the safest workaround found so far.
 
 ## Development
 
