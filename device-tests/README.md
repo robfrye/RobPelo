@@ -80,7 +80,7 @@ but are intentionally excluded from Git.
   activities. RobPelo does not disable or modify the Peloton component that
   owns that banner.
 
-## YouTube in Firefox
+## Historical YouTube in Firefox
 
 - Final tested RobPelo version: `0.6.2-firefox-tab-reuse`.
 - The YouTube tile opened `https://m.youtube.com` explicitly in
@@ -105,7 +105,21 @@ but are intentionally excluded from Git.
 - Firefox launched without a crash after the update.
 - YouTube and the RobPelo HUD continued to work.
 
-## On-device Firefox update checks
+## TV Bro Gecko browser
+
+- Installed official TV Bro 2.1.6 arm64 Gecko-included APK.
+- GitHub release SHA-256 matched:
+  `210071cb2e728d6250635025d699c9c9c3ed3b71d74e7759a55c655d8911f285`.
+- Selected TV Bro's bundled GeckoView engine; the setting persisted across
+  reboot.
+- External YouTube launches hid TV Bro's action bar.
+- YouTube sign-in succeeded.
+- Login persisted across force-stop/relaunch and a full bike reboot.
+- Video, audio, fullscreen, and the RobPelo HUD all worked together.
+- Camera, microphone, and location permissions remained denied.
+- RobPelo remained default HOME and its service cleaned up normally.
+
+## Historical on-device Firefox update checks
 
 - Installed RobPelo version: `0.6.1-firefox-installer`.
 - RobPelo fetched Mozilla's stable mobile-version feed from HOME.
@@ -121,6 +135,41 @@ but are intentionally excluded from Git.
 - The missing-Firefox decision path is unit tested; the full first-install
   package-installer flow was not destructively tested because Firefox was
   already installed on the reference bike.
+
+These Firefox-specific UI paths were later replaced by the tested TV Bro
+integration. The Mac-side Firefox updater remains available.
+
+## Current TV Bro integration
+
+- RobPelo version: `0.7.1-compact-tiles`.
+- YouTube + HUD launches
+  `com.phlox.tvwebbrowser/.activity.main.MainActivity` with
+  `https://m.youtube.com`.
+- TV Bro's external URL launch hides its action bar.
+- GeckoView remains the selected engine.
+- YouTube login persists after process restart and full bike reboot.
+- Video, audio, video fullscreen, and RobPelo HUD work together.
+- RobPelo checks the official TV Bro GitHub release at most once daily while
+  HOME is active.
+- The installer verifies GitHub's digest, package ID, SDK support, version code,
+  and pinned signing certificate.
+- The first-install/update handoff is implemented but was not destructively
+  exercised because uninstalling TV Bro would remove the tested signed-in
+  profile and GeckoView selection.
+- The launcher now uses smaller 300×170 dp tiles in a four-column grid.
+- Visible streaming labels are `Netflix` and `YouTube`; both still start the
+  HUD automatically.
+
+## Netflix in TV Bro
+
+- Peloton SystemUI force-stops the built-in Netflix APK on inactive-
+  subscription bikes.
+- The RobPelo Netflix tile now opens `https://www.netflix.com/browse` in TV Bro
+  GeckoView.
+- Netflix sign-in, video, audio, fullscreen, and HUD all work.
+- Netflix login persisted after TV Bro force-stop/relaunch.
+- Netflix login persisted after a full bike reboot.
+- The vendor Netflix APK remains installed and unchanged.
 
 ## Reboot validation
 

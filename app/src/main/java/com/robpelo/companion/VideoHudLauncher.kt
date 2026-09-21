@@ -23,7 +23,7 @@ object VideoHudLauncher {
         launchWithHud(activity) { ExternalAppLauncher.launchNetflix(activity) }
 
     fun launchYouTube(activity: Activity): Boolean =
-        launchWithHud(activity) { ExternalAppLauncher.launchYouTubeInFirefox(activity) }
+        launchWithHud(activity) { ExternalAppLauncher.launchYouTubeInTvBro(activity) }
 
     private fun launchWithHud(
         activity: Activity,

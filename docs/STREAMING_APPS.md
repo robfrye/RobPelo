@@ -101,6 +101,24 @@ signed newer build might run, but a newer sideload could encounter the same
 store-ownership check. No reliable official sideload-only update path was
 found.
 
+## Netflix
+
+Peloton's built-in Netflix APK is now blocked by Peloton's privileged SystemUI
+when the bike subscription state is inactive. Direct launch starts Netflix,
+then Peloton broadcasts `ACTION_3P_INVALID_ACCESS` and force-stops the Netflix
+process. Peloton's official entertainment action redirects to activation.
+
+RobPelo therefore launches Netflix web in TV Bro GeckoView. Sign-in, playback,
+fullscreen, HUD coexistence, process-restart persistence, and full-reboot
+persistence were verified.
+
+Netflix does not officially list ordinary Android browsers as supported
+netflix.com playback devices. Widevine security level and achieved resolution
+were not measured. The result proves playback on the tested configuration, not
+Netflix certification, L1, HD, Full HD, HDR, or future compatibility.
+
+See [Peloton Netflix subscription gating](./NETFLIX_GATING.md).
+
 ## HBO Max
 
 Current Android package:
@@ -398,6 +416,52 @@ Supporting an authenticated account would require a separate supported OAuth
 and API design, likely with Google developer registration and a YouTube Data API
 integration. That conflicts with the current local/no-cloud simplicity goal.
 
+#### Default browser and cookie sharing
+
+Changing Android's default browser does not make its cookies available to an
+embedded WebView.
+
+The reference bike currently reports:
+
+```text
+Browser role holder: org.mozilla.firefox
+HTTPS handlers: org.mozilla.firefox only
+
+Firefox:
+  UID 10001
+  dataDir /data/user/0/org.mozilla.firefox
+
+RobPelo:
+  UID 10006
+  dataDir /data/user/0/com.robpelo.companion
+
+System WebView provider:
+  package com.android.webview
+  UID 10056
+  dataDir /data/user/0/com.android.webview
+```
+
+The other minimal component, `com.android.htmlviewer`, is a local HTML/file
+viewer and is not registered as an HTTPS browser.
+
+`com.android.webview` supplies rendering code to applications; it is not a
+shared browser profile. Each embedding application owns its own WebView cookie,
+local-storage, database, and cache directories under that application's UID.
+Selecting another default browser changes which activity receives external
+links but does not merge browser profiles or move cookies into RobPelo.
+
+Therefore:
+
+- signing into Firefox does not sign RobPelo's WebView into YouTube;
+- making an AOSP/WebView-based browser the default would not share its cookies
+  either;
+- RobPelo cannot read or copy another browser's HTTP-only/private cookies
+  because Android sandboxing separates their UIDs;
+- using a Custom Tab would share the selected browser's login, but would retain
+  browser-controlled UI;
+- a Trusted Web Activity would require ownership verification for
+  `youtube.com`.
+
 #### YouTube API and telemetry placement
 
 The supported programmable player is the
@@ -457,3 +521,233 @@ with:
 Do not ship the same feature on System WebView 127. If Google-account sign-in
 or telemetry visibly over true fullscreen video is required, retain the
 external Firefox approach instead.
+
+### Physical prototype results
+
+Two separate, non-HOME experimental APKs were built and tested without
+modifying the working RobPelo installation.
+
+#### GeckoView prototype
+
+Tested:
+
+- GeckoView 155 and 156 arm64 artifacts from Mozilla Maven
+- Android compile SDK 37.1 and AGP 9.4 in an isolated build
+- default and legacy/extracted native-library packaging
+- normal and clean-memory launches
+
+Both GeckoView versions initialized their native libraries and child processes,
+then terminated the main application process after several seconds. Android
+recorded the main process exit as `SIGKILL`. The same result occurred with
+approximately 1 GB of available memory, so ordinary memory pressure was ruled
+out. Native-library extraction did not change the result.
+
+The installed Firefox 156 application continues to run on the same hardware,
+but the standalone GeckoView embedding configuration is not compatible enough
+to use for RobPelo without substantially deeper platform-specific debugging.
+The experimental GeckoView APK was removed.
+
+#### System WebView prototype
+
+A separate 16 KB prototype using the installed
+`com.android.webview` 127 provider succeeded:
+
+- YouTube rendered without Firefox's tab strip or address bar.
+- Browsing and search rendered correctly.
+- Video playback worked.
+- YouTube's fullscreen control worked through
+  `WebChromeClient.onShowCustomView()`.
+- The prototype requested only Internet access.
+- RobPelo remained the default HOME.
+
+Authentication did not transfer. The prototype handed Google sign-in to
+Firefox as required by Google's embedded-user-agent policy. After successful
+sign-in in Firefox, the embedded YouTube view still displayed
+`You're not signed in`, confirming that Firefox and WebView use separate cookie
+stores.
+
+#### Updated recommendation
+
+The fullscreen System WebView experience is technically functional for
+anonymous playback. It should not replace the Firefox path because:
+
+- WebView 127 is stale and cannot be safely updated independently on this
+  firmware;
+- authenticated YouTube state cannot be transferred from Firefox;
+- Google sign-in inside the embedded view is unsupported;
+- integrating it would create a second browser profile with separate cookies
+  and storage.
+
+Keep the tested Firefox route as the production path. Reconsider an embedded
+experience only if Peloton ships an updated WebView provider or a future
+GeckoView version/configuration is proven stable on this hardware.
+
+## Alternative standalone browsers
+
+Several browsers can be sideloaded without Google Play and bring their own
+current rendering engine. None can guarantee completely chrome-free YouTube
+browsing because YouTube's manifest requests `minimal-ui`, not `fullscreen`.
+Normal video fullscreen remains separate and generally hides browser controls.
+
+### Cromite
+
+- Official source: [Cromite GitHub releases](https://github.com/uazo/cromite/releases/latest)
+- Artifact: `arm64_ChromePublic.apk`
+- Android requirement: Android 10+
+- Engine: bundled Chromium, not System WebView
+- Distribution: single official APK; built-in update notification/install flow
+- Google/YouTube website login: likely to work as normal first-party browser
+  navigation without Play Services
+- Cookies: persistent normal profile
+- Immersive behavior: normal external URL launches retain browser UI; an
+  installed YouTube PWA may reduce chrome but YouTube requests `minimal-ui`
+
+Cromite is the strongest security/maintenance test candidate but does not
+guarantee a frameless browsing experience.
+
+### Brave
+
+- Official source: [Brave GitHub releases](https://github.com/brave/brave-browser/releases)
+- Artifact: official monolithic `Bravearm64Universal.apk` with checksums and
+  signatures
+- Android requirement: Android 10+
+- Engine: current bundled Chromium
+- Google/YouTube website login: likely
+- Cookies: persistent
+- Custom Tabs: supported, but Custom Tabs retain a toolbar
+- Immersive behavior: video fullscreen works; ordinary browsing retains Brave
+  UI
+
+Brave is the conservative current-engine alternative to Cromite.
+
+### Vivaldi
+
+- Official source and update guidance:
+  [Vivaldi Android APK installation](https://help.vivaldi.com/android/android-install/android-install-and-update-vivaldi-mobile/)
+- Official architecture-specific arm64 APK
+- Android requirement: Android 10+
+- Engine: bundled Chromium
+- Google/YouTube website login and persistent cookies: likely
+- PWA support: documented, but YouTube's `minimal-ui` still prevents assuming a
+  truly frameless window
+- Updates: manual for APK installations
+
+Vivaldi has the clearest vendor-hosted direct APK path.
+
+### TV Bro
+
+- Official source: [TV Bro GitHub releases](https://github.com/truefedex/tv-bro/releases)
+- Candidate artifact: `tvbro-2.1.6-generic-geckoIncluded-arm64-v8a.apk`
+- Android requirement: API 26+
+- Engine: bundled GeckoView 147 when selected; its default mode is System
+  WebView
+- External URL behavior: TV Bro source explicitly hides its action bar for an
+  externally supplied URL
+- Cookies: persistent outside incognito mode
+- Google/YouTube login: plausible but must be tested
+- Updates: generic build includes the project's updater
+
+TV Bro is the browser most closely aligned with hidden UI. Its bundled Gecko
+147 is materially older than Firefox 156, and the maintainer currently defaults
+to WebView because Gecko is considered less stable/performance-efficient. The
+reference bike also failed to run standalone GeckoView 155 and 156 probes, so
+TV Bro's separately integrated Gecko mode required its own physical test.
+
+#### Physical TV Bro results
+
+TV Bro 2.1.6 was installed from the official GitHub release:
+
+```text
+Artifact: tvbro-2.1.6-generic-geckoIncluded-arm64-v8a.apk
+SHA-256: 210071cb2e728d6250635025d699c9c9c3ed3b71d74e7759a55c655d8911f285
+Package: com.phlox.tvwebbrowser
+Version code: 69
+Minimum SDK: 26
+Target SDK: 36
+```
+
+The digest matched GitHub's release asset metadata. Camera, microphone, and
+location permissions remained denied.
+
+TV Bro defaults to System WebView. After explicitly selecting its bundled
+GeckoView engine and accepting the one-time restart:
+
+- TV Bro remained stable on the RB1VQ.
+- External `https://m.youtube.com` launches hid TV Bro's action bar.
+- YouTube rendered in a chrome-free layout.
+- Google/YouTube sign-in succeeded inside TV Bro.
+- The authenticated session survived a complete TV Bro force-stop/relaunch.
+- The authenticated session survived a full bike reboot.
+- Video and audio playback worked.
+- YouTube video fullscreen worked.
+- RobPelo's `TYPE_APPLICATION_OVERLAY` HUD remained visible and functional over
+  both browsing and fullscreen playback.
+- Closing the HUD removed the ride service and Affernet binding normally.
+- RobPelo remained the default HOME throughout.
+
+TV Bro uses several Gecko child processes and has a materially larger memory
+footprint than the System WebView path. It should remain an explicitly launched
+video browser rather than a permanent background process.
+
+The built-in generic-build updater was identified but not yet exercised.
+
+RobPelo now uses TV Bro for its production **YouTube + HUD** tile and includes
+its own TV Bro installer/updater:
+
+- checks `truefedex/tv-bro` official GitHub releases at most once per day while
+  HOME is active;
+- selects only the generic Gecko-included arm64 asset;
+- validates GitHub's SHA-256 asset digest;
+- validates package ID, API compatibility, and version code;
+- pins TV Bro's release signing certificate;
+- hands the verified APK to Android's user-confirmed installer.
+
+After first install, users must select **GeckoView** once in TV Bro Settings and
+restart TV Bro. RobPelo displays that setup guidance after installation.
+
+### Fully Kiosk Browser
+
+- Official source: [Fully Kiosk](https://www.fully-kiosk.com/en/)
+- Provides true immersive/kiosk browsing and can hide status, navigation,
+  action, address, and tab bars
+- Uses Android System WebView
+- On this bike that means Chromium/WebView 127
+- Google OAuth may reject the embedded WebView
+- Cookie persistence is configurable
+
+Fully Kiosk best matches the visual goal but inherits the two major rejected
+constraints: stale WebView 127 and unreliable Google sign-in.
+
+### Native Alpha and Hermit-style wrappers
+
+These provide frameless or immersive WebView wrappers but also inherit System
+WebView 127 and Google's embedded-user-agent login restrictions. Native Alpha
+has an official GitHub APK; Hermit's supported distribution is Google Play.
+Neither is preferable to the already tested WebView prototype.
+
+### Firefox Focus / Fennec F-Droid
+
+- Fennec F-Droid is a current, independently updated Gecko browser with
+  persistent cookies, but ordinary browsing still displays Firefox UI.
+- Firefox Focus has a smaller UI but intentionally emphasizes private sessions
+  and erase behavior, making persistent YouTube login a poor fit.
+
+### Chrome and Chromium snapshots
+
+Google Chrome's supported Android distribution channel is Google Play. Generic
+Chromium snapshots are developer artifacts without an appropriate stable,
+signed update channel. They are not recommended for a shareable RobPelo setup.
+
+### Recommended reversible test order
+
+1. **TV Bro Gecko-included arm64** if hidden UI is the primary goal. Startup,
+   Google login, reboot persistence, fullscreen, and HUD coexistence are now
+   verified on the reference bike; updater behavior remains to be tested.
+2. **Cromite arm64** if current security updates and login reliability are more
+   important than completely hidden UI. Test its YouTube PWA/minimal-UI mode.
+3. **Brave arm64** as the conservative Chromium alternative.
+
+Install any candidate as an additional package and launch it explicitly from a
+temporary test command. Do not replace Firefox or change the default browser
+until the candidate passes login, reboot persistence, fullscreen, HUD, and
+update tests.

@@ -11,9 +11,8 @@
 
     <queries>
         <package android:name="com.onepeloton.affernetservice" />
-        <package android:name="com.netflix.mediaclient" />
         <package android:name="com.peloton.activity" />
-        <package android:name="org.mozilla.firefox" />
+        <package android:name="com.phlox.tvwebbrowser" />
     </queries>
 
     <application

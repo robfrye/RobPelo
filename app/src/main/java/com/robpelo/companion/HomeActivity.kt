@@ -11,30 +11,44 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import com.robpelo.companion.update.FirefoxRelease
-import com.robpelo.companion.update.FirefoxUpdateState
-import com.robpelo.companion.update.FirefoxUpdater
+import com.robpelo.companion.update.TvBroRelease
+import com.robpelo.companion.update.TvBroUpdateState
+import com.robpelo.companion.update.TvBroUpdater
 
 class HomeActivity : Activity() {
     private var launchNetflixAfterOverlayGrant = false
     private var launchYouTubeAfterOverlayGrant = false
-    private var pendingFirefoxInstall: FirefoxRelease? = null
-    private var firefoxUpdateState: FirefoxUpdateState? = null
-    private lateinit var firefoxUpdater: FirefoxUpdater
-    private lateinit var firefoxUpdateNotice: TextView
-    private lateinit var firefoxUpdateButton: Button
+    private var pendingTvBroInstall: TvBroRelease? = null
+    private var awaitingTvBroInstallResult = false
+    private var tvBroUpdateState: TvBroUpdateState? = null
+    private lateinit var tvBroUpdater: TvBroUpdater
+    private lateinit var tvBroUpdateNotice: TextView
+    private lateinit var tvBroUpdateButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        firefoxUpdater = FirefoxUpdater(this)
+        tvBroUpdater = TvBroUpdater(this)
         setContentView(buildContentView())
     }
 
     override fun onResume() {
         super.onResume()
+        if (awaitingTvBroInstallResult) {
+            awaitingTvBroInstallResult = false
+            if (isTvBroInstalled()) {
+                Toast.makeText(
+                    this,
+                    R.string.tvbro_setup_required,
+                    Toast.LENGTH_LONG,
+                ).show()
+                ExternalAppLauncher.launchTvBroSetup(this)
+                return
+            }
+        }
         if (
             launchNetflixAfterOverlayGrant &&
             VideoHudLauncher.hasOverlayPermission(this)
@@ -49,17 +63,17 @@ class HomeActivity : Activity() {
             launchYouTubeAfterOverlayGrant = false
             launchYouTubeWithHud()
         }
-        val pendingRelease = pendingFirefoxInstall
+        val pendingRelease = pendingTvBroInstall
         if (pendingRelease != null && packageManager.canRequestPackageInstalls()) {
-            pendingFirefoxInstall = null
-            downloadFirefox(pendingRelease)
+            pendingTvBroInstall = null
+            downloadTvBro(pendingRelease)
         } else {
-            firefoxUpdater.checkIfDue(::renderFirefoxUpdateState)
+            tvBroUpdater.checkIfDue(::renderTvBroUpdateState)
         }
     }
 
     override fun onDestroy() {
-        firefoxUpdater.shutdown()
+        tvBroUpdater.shutdown()
         super.onDestroy()
     }
 
@@ -75,20 +89,21 @@ class HomeActivity : Activity() {
             setTextColor(getColor(R.color.secondary_text))
         }, marginLayoutParams(topDp = 8))
 
-        val tiles = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
+        val tiles = GridLayout(this).apply {
+            columnCount = 4
+            alignmentMode = GridLayout.ALIGN_BOUNDS
+            useDefaultMargins = false
         }
         tiles.addView(tile(getString(R.string.just_ride_title)) {
             startActivity(Intent(this, JustRideActivity::class.java))
-        })
+        }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_netflix)) {
             requestNetflixWithHud()
-        }, marginLayoutParams(leftDp = 28))
+        }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_youtube)) {
             requestYouTubeWithHud()
-        }, marginLayoutParams(leftDp = 28))
-        root.addView(tiles, marginLayoutParams(topDp = 48))
+        }, tileLayoutParams())
+        root.addView(tiles, marginLayoutParams(topDp = 32))
 
         val utilities = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -130,20 +145,20 @@ class HomeActivity : Activity() {
                 }
             }
         }, marginLayoutParams(leftDp = 24))
-        firefoxUpdateButton = Button(this).apply {
+        tvBroUpdateButton = Button(this).apply {
             text = getString(R.string.check_firefox_updates)
             minWidth = dp(250)
             minHeight = dp(58)
-            setOnClickListener { onFirefoxUpdateClicked() }
+            setOnClickListener { onTvBroUpdateClicked() }
         }
-        utilities.addView(firefoxUpdateButton, marginLayoutParams(leftDp = 24))
+        utilities.addView(tvBroUpdateButton, marginLayoutParams(leftDp = 24))
         root.addView(utilities, marginLayoutParams(topDp = 40))
 
-        firefoxUpdateNotice = textView("", 17f, true).apply {
+        tvBroUpdateNotice = textView("", 17f, true).apply {
             visibility = View.GONE
             gravity = Gravity.CENTER
         }
-        root.addView(firefoxUpdateNotice, marginLayoutParams(topDp = 12))
+        root.addView(tvBroUpdateNotice, marginLayoutParams(topDp = 12))
         return root
     }
 
@@ -187,15 +202,15 @@ class HomeActivity : Activity() {
         }
     }
 
-    private fun onFirefoxUpdateClicked() {
-        val available = firefoxUpdateState as? FirefoxUpdateState.Available
+    private fun onTvBroUpdateClicked() {
+        val available = tvBroUpdateState as? TvBroUpdateState.Available
         if (available == null) {
-            firefoxUpdater.check(::renderFirefoxUpdateState)
+            tvBroUpdater.check(::renderTvBroUpdateState)
             return
         }
 
         if (!packageManager.canRequestPackageInstalls()) {
-            pendingFirefoxInstall = available.release
+            pendingTvBroInstall = available.release
             Toast.makeText(
                 this,
                 R.string.firefox_install_permission,
@@ -209,35 +224,35 @@ class HomeActivity : Activity() {
             )
             return
         }
-        downloadFirefox(available.release)
+        downloadTvBro(available.release)
     }
 
-    private fun downloadFirefox(release: FirefoxRelease) {
-        firefoxUpdater.downloadAndVerify(release, ::renderFirefoxUpdateState)
+    private fun downloadTvBro(release: TvBroRelease) {
+        tvBroUpdater.downloadAndVerify(release, ::renderTvBroUpdateState)
     }
 
-    private fun renderFirefoxUpdateState(state: FirefoxUpdateState) {
+    private fun renderTvBroUpdateState(state: TvBroUpdateState) {
         if (isDestroyed) {
             return
         }
-        firefoxUpdateState = state
+        tvBroUpdateState = state
         when (state) {
-            FirefoxUpdateState.Checking -> {
-                firefoxUpdateButton.isEnabled = false
-                firefoxUpdateButton.text = getString(R.string.checking_firefox)
-                firefoxUpdateNotice.visibility = View.GONE
+            TvBroUpdateState.Checking -> {
+                tvBroUpdateButton.isEnabled = false
+                tvBroUpdateButton.text = getString(R.string.checking_firefox)
+                tvBroUpdateNotice.visibility = View.GONE
             }
-            is FirefoxUpdateState.Current -> {
-                firefoxUpdateButton.isEnabled = true
-                firefoxUpdateButton.text = getString(R.string.check_firefox_updates)
-                firefoxUpdateNotice.text =
+            is TvBroUpdateState.Current -> {
+                tvBroUpdateButton.isEnabled = true
+                tvBroUpdateButton.text = getString(R.string.check_firefox_updates)
+                tvBroUpdateNotice.text =
                     getString(R.string.firefox_current, state.installedVersion)
-                firefoxUpdateNotice.setTextColor(getColor(R.color.secondary_text))
-                firefoxUpdateNotice.visibility = View.VISIBLE
+                tvBroUpdateNotice.setTextColor(getColor(R.color.secondary_text))
+                tvBroUpdateNotice.visibility = View.VISIBLE
             }
-            is FirefoxUpdateState.Available -> {
-                firefoxUpdateButton.isEnabled = true
-                firefoxUpdateButton.text = getString(
+            is TvBroUpdateState.Available -> {
+                tvBroUpdateButton.isEnabled = true
+                tvBroUpdateButton.text = getString(
                     if (state.installedVersion == null) {
                         R.string.install_firefox
                     } else {
@@ -245,49 +260,59 @@ class HomeActivity : Activity() {
                     },
                     state.release.versionName,
                 )
-                firefoxUpdateNotice.text =
+                tvBroUpdateNotice.text =
                     getString(R.string.firefox_update_available, state.release.versionName)
-                firefoxUpdateNotice.setTextColor(getColor(R.color.accent))
-                firefoxUpdateNotice.visibility = View.VISIBLE
+                tvBroUpdateNotice.setTextColor(getColor(R.color.accent))
+                tvBroUpdateNotice.visibility = View.VISIBLE
             }
-            is FirefoxUpdateState.Downloading -> {
-                firefoxUpdateButton.isEnabled = false
-                firefoxUpdateButton.text =
+            is TvBroUpdateState.Downloading -> {
+                tvBroUpdateButton.isEnabled = false
+                tvBroUpdateButton.text =
                     getString(R.string.downloading_firefox, state.versionName)
-                firefoxUpdateNotice.visibility = View.GONE
+                tvBroUpdateNotice.visibility = View.GONE
             }
-            is FirefoxUpdateState.ReadyToInstall -> {
-                firefoxUpdateButton.isEnabled = true
-                firefoxUpdateButton.text = getString(R.string.check_firefox_updates)
-                openFirefoxInstaller(state)
+            is TvBroUpdateState.ReadyToInstall -> {
+                tvBroUpdateButton.isEnabled = true
+                tvBroUpdateButton.text = getString(R.string.check_firefox_updates)
+                openTvBroInstaller(state)
             }
-            is FirefoxUpdateState.Failed -> {
-                firefoxUpdateButton.isEnabled = true
-                firefoxUpdateButton.text = getString(R.string.check_firefox_updates)
-                firefoxUpdateNotice.text =
+            is TvBroUpdateState.Failed -> {
+                tvBroUpdateButton.isEnabled = true
+                tvBroUpdateButton.text = getString(R.string.check_firefox_updates)
+                tvBroUpdateNotice.text =
                     getString(R.string.firefox_update_failed, state.message)
-                firefoxUpdateNotice.setTextColor(getColor(R.color.error))
-                firefoxUpdateNotice.visibility = View.VISIBLE
+                tvBroUpdateNotice.setTextColor(getColor(R.color.error))
+                tvBroUpdateNotice.visibility = View.VISIBLE
             }
         }
     }
 
-    private fun openFirefoxInstaller(state: FirefoxUpdateState.ReadyToInstall) {
+    private fun openTvBroInstaller(state: TvBroUpdateState.ReadyToInstall) {
         val installIntent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(state.contentUri, APK_MIME_TYPE)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
+            awaitingTvBroInstallResult = true
             startActivity(installIntent)
         } catch (exception: android.content.ActivityNotFoundException) {
-            renderFirefoxUpdateState(
-                FirefoxUpdateState.Failed("Android package installer is unavailable"),
+            renderTvBroUpdateState(
+                TvBroUpdateState.Failed("Android package installer is unavailable"),
             )
+            awaitingTvBroInstallResult = false
         } catch (exception: SecurityException) {
-            renderFirefoxUpdateState(
-                FirefoxUpdateState.Failed(exception.message ?: "installer launch denied"),
+            renderTvBroUpdateState(
+                TvBroUpdateState.Failed(exception.message ?: "installer launch denied"),
             )
+            awaitingTvBroInstallResult = false
         }
+    }
+
+    private fun isTvBroInstalled(): Boolean = try {
+        packageManager.getPackageInfo(TV_BRO_PACKAGE, 0)
+        true
+    } catch (exception: android.content.pm.PackageManager.NameNotFoundException) {
+        false
     }
 
     private fun tile(label: String, action: () -> Unit): TextView {
@@ -298,16 +323,21 @@ class HomeActivity : Activity() {
         }
         return TextView(this).apply {
             text = label
-            textSize = 30f
+            textSize = 24f
             gravity = Gravity.CENTER
             setTextColor(getColor(R.color.primary_text))
             setTypeface(typeface, Typeface.BOLD)
             this.background = background
-            minWidth = dp(350)
-            minHeight = dp(220)
             setOnClickListener { action() }
         }
     }
+
+    private fun tileLayoutParams(): GridLayout.LayoutParams =
+        GridLayout.LayoutParams().apply {
+            width = dp(300)
+            height = dp(170)
+            setMargins(dp(12), dp(12), dp(12), dp(12))
+        }
 
     private fun textView(text: String, sizeSp: Float, bold: Boolean): TextView =
         TextView(this).apply {
@@ -336,5 +366,6 @@ class HomeActivity : Activity() {
 
     private companion object {
         const val APK_MIME_TYPE = "application/vnd.android.package-archive"
+        const val TV_BRO_PACKAGE = "com.phlox.tvwebbrowser"
     }
 }

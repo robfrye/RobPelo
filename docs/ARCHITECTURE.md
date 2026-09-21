@@ -1,6 +1,6 @@
 # Peloton Companion Architecture Proposal
 
-Status: implemented through Stage 4, including Firefox-based YouTube + HUD, and
+Status: implemented through Stage 4, including TV Bro-based YouTube + HUD, and
 validated on the target device.
 
 This design is based on the connected `PLTN-RB1VQ` running Android 11/API 30
@@ -71,10 +71,10 @@ Peloton Companion APK
 +-- ExternalAppLauncher
       Launches Netflix and future allowlisted applications
 |
-+-- FirefoxUpdater
-      Checks Mozilla daily while HOME is active
++-- TvBroUpdater
+      Checks TV Bro's official GitHub release daily while HOME is active
       Downloads only after user action
-      Verifies package, SDK, version, and signing certificate
+      Verifies digest, package, SDK, version, and signing certificate
       Hands the APK to Android's confirmation UI
 ```
 
@@ -379,7 +379,12 @@ Initial tiles:
 
 - Just Ride
 - Netflix
-- YouTube in Firefox
+- YouTube in TV Bro GeckoView
+
+The launcher uses a compact four-column `GridLayout`. Current labels omit
+implementation details such as `+ HUD`; Netflix and YouTube still start the
+telemetry HUD automatically. Additional allowlisted streaming services can use
+the remaining column and wrap to later rows.
 
 Utility actions:
 
@@ -440,32 +445,35 @@ Do not request:
 - Bluetooth/location permission until heart-rate support is actually added;
 - Peloton subscription or signature permissions.
 
-Firefox updating requires `INTERNET` and `REQUEST_INSTALL_PACKAGES`. The latter
-is used only to hand a verified Firefox APK to Android's user-confirmed package
-installer; RobPelo cannot install silently.
+TV Bro installation/updating requires `INTERNET` and
+`REQUEST_INSTALL_PACKAGES`. The latter is used only to hand a verified TV Bro
+APK to Android's user-confirmed package installer; RobPelo cannot install
+silently.
 
-## Firefox update checks
+## TV Bro update checks
 
-`FirefoxUpdater` checks Mozilla's official stable-version JSON feed when HOME
-is visible and the previous successful check is at least 24 hours old. It does
-not register a boot receiver, schedule background work, wake the device, or
-download an APK during a periodic check.
+`TvBroUpdater` checks the official `truefedex/tv-bro` GitHub release API when
+HOME is visible and the previous successful check is at least 24 hours old. It
+does not register a boot receiver, schedule background work, wake the device,
+or download an APK during a periodic check.
 
 If a newer version is available, HOME displays a notice and changes the update
 button label. Download begins only after a user tap.
 
 Before opening Android's installer, the updater verifies:
 
-- package name is exactly `org.mozilla.firefox`;
+- GitHub's published asset digest matches the downloaded file;
+- package name is exactly `com.phlox.tvwebbrowser`;
 - candidate version code is greater than the installed version;
 - candidate minimum SDK is supported;
-- candidate signer SHA-256 set exactly matches installed Firefox;
+- candidate signer matches the pinned TV Bro release certificate and the
+  installed package when updating;
 - download size does not exceed 250 MB.
 
-The APK is fetched only over HTTPS from Mozilla's official archive and stored
-under RobPelo's private cache. A narrow `FileProvider` grants the Android
-package installer temporary read access. Temporary files are deleted after
-failed verification and can be cleared with RobPelo's normal app data.
+The APK is fetched only from the official GitHub release URL and stored under
+RobPelo's private cache. A narrow `FileProvider` grants the Android package
+installer temporary read access. Temporary files are deleted after failed
+verification and can be cleared with RobPelo's normal app data.
 
 ## Dependency policy
 
@@ -573,6 +581,11 @@ Every device-changing test must:
 4. avoid commands targeting Peloton package state or data;
 5. verify the expected result;
 6. retain a tested rollback command.
+
+TV Bro-based streaming services use the lightweight default procedure in
+[STREAMING_SERVICE_TEST_PROCEDURE.md](./STREAMING_SERVICE_TEST_PROCEDURE.md).
+The full login/restart/reboot/fullscreen/DRM matrix is run only when explicitly
+requested or when a service-specific failure warrants escalation.
 
 The first APK installation completed after its source, manifest, build output,
 and exact `adb install` command were reviewed. Results are recorded in

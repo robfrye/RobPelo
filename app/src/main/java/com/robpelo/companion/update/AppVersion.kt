@@ -1,6 +1,6 @@
 package com.robpelo.companion.update
 
-internal object FirefoxVersion {
+internal object AppVersion {
     fun updateAvailable(candidate: String, installed: String?): Boolean =
         installed == null || isNewer(candidate, installed)
 
