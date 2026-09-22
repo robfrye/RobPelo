@@ -11,8 +11,8 @@ android {
         applicationId = "com.robpelo.companion"
         minSdk = 30
         targetSdk = 34
-        versionCode = 17
-        versionName = "0.7.2-tvbro-streaming"
+        versionCode = 18
+        versionName = "0.8.0-streaming-grid"
 
     }
 

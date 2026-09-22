@@ -380,11 +380,22 @@ Initial tiles:
 - Just Ride
 - Netflix
 - YouTube in TV Bro GeckoView
+- HBO Max in TV Bro GeckoView
+- Prime Video in TV Bro GeckoView
+- Apple TV in TV Bro GeckoView
 
-The launcher uses a compact four-column `GridLayout`. Current labels omit
+The launcher uses a compact three-column `GridLayout`. Current labels omit
 implementation details such as `+ HUD`; Netflix and YouTube still start the
-telemetry HUD automatically. Additional allowlisted streaming services can use
-the remaining column and wrap to later rows.
+telemetry HUD automatically. Additional allowlisted streaming services wrap to
+later rows.
+
+Current TV Bro allowlist:
+
+- Netflix: `https://www.netflix.com/browse`
+- YouTube: `https://m.youtube.com`
+- HBO Max: `https://play.hbomax.com/`
+- Prime Video: `https://www.primevideo.com/region/na/`
+- Apple TV: `https://tv.apple.com/`
 
 Utility actions:
 

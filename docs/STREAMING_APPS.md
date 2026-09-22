@@ -108,9 +108,10 @@ when the bike subscription state is inactive. Direct launch starts Netflix,
 then Peloton broadcasts `ACTION_3P_INVALID_ACCESS` and force-stops the Netflix
 process. Peloton's official entertainment action redirects to activation.
 
-RobPelo therefore launches Netflix web in TV Bro GeckoView. Sign-in, playback,
+RobPelo therefore launches Netflix web in TV Bro. Sign-in, playback,
 fullscreen, HUD coexistence, process-restart persistence, and full-reboot
-persistence were verified.
+persistence were verified with GeckoView. TV Bro was subsequently switched to
+System WebView with a desktop Chrome user agent for all streaming services.
 
 Netflix does not officially list ordinary Android browsers as supported
 netflix.com playback devices. Widevine security level and achieved resolution
@@ -143,6 +144,16 @@ A compatible APK or complete split set might install, but successful sign-in
 and protected playback are uncertain because this is not a Play-certified
 device and no supported standalone APK is available. Installation alone would
 not prove DRM playback.
+
+The browser route behaves differently by TV Bro engine. Bundled GeckoView 147
+continued sending an Android-mobile user agent even when TV Bro's desktop
+option was selected, so HBO Max redirected to `/intercept/mobile` and attempted
+to launch its unavailable native app. TV Bro's System WebView honored the
+**Chrome (Desktop)** user-agent preset, bypassed that redirect, retained the
+authenticated HBO session, and loaded the HBO Max Home page. The page was
+visible on the Peloton display; ADB screenshots were black. Playback, DRM,
+fullscreen, restart persistence, and reboot persistence have not yet been
+validated in this WebView configuration.
 
 ## YouTube
 
@@ -271,6 +282,22 @@ Less promising:
 - Prime Video until its update path is solved
 - HBO Max
 - Disney+, Hulu, and similar store- and DRM-dependent services
+
+## Additional TV Bro tiles
+
+RobPelo `0.8.0-streaming-grid` adds these TV Bro + HUD destinations:
+
+| Service | URL | Lightweight result |
+|---|---|---|
+| HBO Max | `https://play.hbomax.com/` | WebView desktop mode bypassed the mobile-app redirect and loaded the authenticated Home page; playback remains untested |
+| Prime Video | `https://www.primevideo.com/region/na/` | Regional landing/sign-in page rendered under System WebView |
+| Apple TV | `https://tv.apple.com/` | Catalog/sign-up landing page rendered under System WebView |
+
+Per the standing test policy, authentication, cookie persistence, playback,
+fullscreen, DRM, reboot, and long-duration checks were not performed for these
+new services. Use
+[STREAMING_SERVICE_TEST_PROCEDURE.md](./STREAMING_SERVICE_TEST_PROCEDURE.md)
+if a full service-specific validation is requested later.
 
 ## Recommended RobPelo direction
 
@@ -669,8 +696,8 @@ Target SDK: 36
 The digest matched GitHub's release asset metadata. Camera, microphone, and
 location permissions remained denied.
 
-TV Bro defaults to System WebView. After explicitly selecting its bundled
-GeckoView engine and accepting the one-time restart:
+TV Bro defaults to System WebView. Initial physical testing explicitly selected
+its bundled GeckoView engine and accepted the one-time restart:
 
 - TV Bro remained stable on the RB1VQ.
 - External `https://m.youtube.com` launches hid TV Bro's action bar.
@@ -689,6 +716,23 @@ TV Bro uses several Gecko child processes and has a materially larger memory
 footprint than the System WebView path. It should remain an explicitly launched
 video browser rather than a permanent background process.
 
+The production configuration was later changed to:
+
+```text
+Web browser engine: WebView
+User Agent String: Chrome (Desktop)
+```
+
+The setting is reversible in TV Bro Settings. The reference bike's WebView 127
+honored the desktop user agent, was noticeably more responsive, and allowed HBO
+Max to load its authenticated desktop Home page instead of redirecting to the
+native-app intercept. This is now the selected engine for all RobPelo streaming
+tiles. The GeckoView and WebView engines use different browser-data stores, so
+services authenticated under GeckoView may require a one-time sign-in under
+WebView. Lightweight WebView checks rendered Netflix's sign-in page, YouTube,
+Prime Video, and Apple TV successfully. Protected playback remains
+service-specific.
+
 The built-in generic-build updater was identified but not yet exercised.
 
 RobPelo now uses TV Bro for its production **YouTube + HUD** tile and includes
@@ -702,8 +746,9 @@ its own TV Bro installer/updater:
 - pins TV Bro's release signing certificate;
 - hands the verified APK to Android's user-confirmed installer.
 
-After first install, users must select **GeckoView** once in TV Bro Settings and
-restart TV Bro. RobPelo displays that setup guidance after installation.
+After first install, users must select **WebView** under **Web browser engine**
+and **Chrome (Desktop)** under **Choose User Agent String** in TV Bro Settings.
+RobPelo displays that setup guidance after installation.
 
 ### Fully Kiosk Browser
 

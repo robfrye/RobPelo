@@ -25,6 +25,15 @@ object VideoHudLauncher {
     fun launchYouTube(activity: Activity): Boolean =
         launchWithHud(activity) { ExternalAppLauncher.launchYouTubeInTvBro(activity) }
 
+    fun launchHboMax(activity: Activity): Boolean =
+        launchWithHud(activity) { ExternalAppLauncher.launchHboMax(activity) }
+
+    fun launchPrimeVideo(activity: Activity): Boolean =
+        launchWithHud(activity) { ExternalAppLauncher.launchPrimeVideo(activity) }
+
+    fun launchAppleTv(activity: Activity): Boolean =
+        launchWithHud(activity) { ExternalAppLauncher.launchAppleTv(activity) }
+
     private fun launchWithHud(
         activity: Activity,
         launchDestination: () -> Boolean,

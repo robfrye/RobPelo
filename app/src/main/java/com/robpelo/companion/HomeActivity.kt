@@ -22,6 +22,9 @@ import com.robpelo.companion.update.TvBroUpdater
 class HomeActivity : Activity() {
     private var launchNetflixAfterOverlayGrant = false
     private var launchYouTubeAfterOverlayGrant = false
+    private var launchHboMaxAfterOverlayGrant = false
+    private var launchPrimeVideoAfterOverlayGrant = false
+    private var launchAppleTvAfterOverlayGrant = false
     private var pendingTvBroInstall: TvBroRelease? = null
     private var awaitingTvBroInstallResult = false
     private var tvBroUpdateState: TvBroUpdateState? = null
@@ -63,6 +66,27 @@ class HomeActivity : Activity() {
             launchYouTubeAfterOverlayGrant = false
             launchYouTubeWithHud()
         }
+        if (
+            launchHboMaxAfterOverlayGrant &&
+            VideoHudLauncher.hasOverlayPermission(this)
+        ) {
+            launchHboMaxAfterOverlayGrant = false
+            launchHboMaxWithHud()
+        }
+        if (
+            launchPrimeVideoAfterOverlayGrant &&
+            VideoHudLauncher.hasOverlayPermission(this)
+        ) {
+            launchPrimeVideoAfterOverlayGrant = false
+            launchPrimeVideoWithHud()
+        }
+        if (
+            launchAppleTvAfterOverlayGrant &&
+            VideoHudLauncher.hasOverlayPermission(this)
+        ) {
+            launchAppleTvAfterOverlayGrant = false
+            launchAppleTvWithHud()
+        }
         val pendingRelease = pendingTvBroInstall
         if (pendingRelease != null && packageManager.canRequestPackageInstalls()) {
             pendingTvBroInstall = null
@@ -81,7 +105,7 @@ class HomeActivity : Activity() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(dp(56), dp(44), dp(56), dp(44))
+            setPadding(dp(40), dp(24), dp(40), dp(24))
             setBackgroundColor(getColor(R.color.background))
         }
         root.addView(textView(getString(R.string.home_title), 48f, true))
@@ -90,7 +114,7 @@ class HomeActivity : Activity() {
         }, marginLayoutParams(topDp = 8))
 
         val tiles = GridLayout(this).apply {
-            columnCount = 4
+            columnCount = 3
             alignmentMode = GridLayout.ALIGN_BOUNDS
             useDefaultMargins = false
         }
@@ -103,7 +127,16 @@ class HomeActivity : Activity() {
         tiles.addView(tile(getString(R.string.open_youtube)) {
             requestYouTubeWithHud()
         }, tileLayoutParams())
-        root.addView(tiles, marginLayoutParams(topDp = 32))
+        tiles.addView(tile(getString(R.string.open_hbo_max)) {
+            requestHboMaxWithHud()
+        }, tileLayoutParams())
+        tiles.addView(tile(getString(R.string.open_prime_video)) {
+            requestPrimeVideoWithHud()
+        }, tileLayoutParams())
+        tiles.addView(tile(getString(R.string.open_apple_tv)) {
+            requestAppleTvWithHud()
+        }, tileLayoutParams())
+        root.addView(tiles, marginLayoutParams(topDp = 16))
 
         val utilities = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -152,7 +185,7 @@ class HomeActivity : Activity() {
             setOnClickListener { onTvBroUpdateClicked() }
         }
         utilities.addView(tvBroUpdateButton, marginLayoutParams(leftDp = 24))
-        root.addView(utilities, marginLayoutParams(topDp = 40))
+        root.addView(utilities, marginLayoutParams(topDp = 20))
 
         tvBroUpdateNotice = textView("", 17f, true).apply {
             visibility = View.GONE
@@ -199,6 +232,66 @@ class HomeActivity : Activity() {
     private fun launchYouTubeWithHud() {
         if (!VideoHudLauncher.launchYouTube(this)) {
             Toast.makeText(this, R.string.youtube_unavailable, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun requestHboMaxWithHud() {
+        if (!VideoHudLauncher.hasOverlayPermission(this)) {
+            launchHboMaxAfterOverlayGrant = true
+            Toast.makeText(
+                this,
+                R.string.overlay_permission_required,
+                Toast.LENGTH_LONG,
+            ).show()
+            VideoHudLauncher.openOverlaySettings(this)
+            return
+        }
+        launchHboMaxWithHud()
+    }
+
+    private fun launchHboMaxWithHud() {
+        if (!VideoHudLauncher.launchHboMax(this)) {
+            Toast.makeText(this, R.string.hbo_max_unavailable, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun requestPrimeVideoWithHud() {
+        if (!VideoHudLauncher.hasOverlayPermission(this)) {
+            launchPrimeVideoAfterOverlayGrant = true
+            Toast.makeText(
+                this,
+                R.string.overlay_permission_required,
+                Toast.LENGTH_LONG,
+            ).show()
+            VideoHudLauncher.openOverlaySettings(this)
+            return
+        }
+        launchPrimeVideoWithHud()
+    }
+
+    private fun launchPrimeVideoWithHud() {
+        if (!VideoHudLauncher.launchPrimeVideo(this)) {
+            Toast.makeText(this, R.string.prime_video_unavailable, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun requestAppleTvWithHud() {
+        if (!VideoHudLauncher.hasOverlayPermission(this)) {
+            launchAppleTvAfterOverlayGrant = true
+            Toast.makeText(
+                this,
+                R.string.overlay_permission_required,
+                Toast.LENGTH_LONG,
+            ).show()
+            VideoHudLauncher.openOverlaySettings(this)
+            return
+        }
+        launchAppleTvWithHud()
+    }
+
+    private fun launchAppleTvWithHud() {
+        if (!VideoHudLauncher.launchAppleTv(this)) {
+            Toast.makeText(this, R.string.apple_tv_unavailable, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -334,8 +427,8 @@ class HomeActivity : Activity() {
 
     private fun tileLayoutParams(): GridLayout.LayoutParams =
         GridLayout.LayoutParams().apply {
-            width = dp(300)
-            height = dp(170)
+            width = dp(280)
+            height = dp(140)
             setMargins(dp(12), dp(12), dp(12), dp(12))
         }
 

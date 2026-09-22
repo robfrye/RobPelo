@@ -9,9 +9,12 @@ It provides:
 - a standalone Just Ride experience;
 - live cadence, resistance, and output;
 - locally calculated speed, elapsed time, distance, and total output;
-- signed-in Netflix through TV Bro GeckoView with a compact telemetry HUD;
-- immersive signed-in YouTube through TV Bro GeckoView with the same telemetry
+- signed-in Netflix through TV Bro System WebView with a compact telemetry HUD;
+- immersive signed-in YouTube through TV Bro System WebView with the same telemetry
   HUD;
+- HBO Max through TV Bro System WebView with the telemetry HUD;
+- Prime Video through TV Bro System WebView with the telemetry HUD;
+- Apple TV through TV Bro System WebView with the telemetry HUD;
 - temporary access to the stock Peloton experience without changing the default
   HOME;
 - direct access to Android Settings from the HOME utility row.
@@ -129,12 +132,16 @@ Android's user-confirmed installer. It never installs silently.
 After first installation:
 
 1. Open TV Bro Settings.
-2. Set **Web browser engine** to **GeckoView**.
-3. Confirm the warning.
-4. Exit/restart TV Bro once.
+2. Set **Web browser engine** to **WebView**.
+3. Set **Choose User Agent String** to **Chrome (Desktop)**.
+4. Exit TV Bro Settings.
 
-This one-time choice provides hidden browser chrome, persistent YouTube login,
-video fullscreen, and HUD compatibility on the tested bike.
+This one-time choice provides hidden browser chrome, a responsive browser
+engine, persistent login, video fullscreen, and HUD compatibility on the
+tested bike. The desktop user agent also prevents HBO Max from redirecting to
+its unavailable native Android app. Switching from GeckoView to WebView uses a
+different browser-data store, so previously authenticated services may require
+a one-time sign-in again.
 
 ### Optional Firefox maintenance
 
@@ -224,9 +231,9 @@ The **Peloton Home** button opens the stock Peloton activation/home experience
 temporarily. It does not change the selected default HOME; pressing Home
 returns to RobPelo.
 
-The **YouTube + HUD** button launches YouTube explicitly in TV Bro. TV Bro's
-external URL mode hides its action bar; its GeckoView profile retains YouTube
-login across app restarts and bike reboots.
+The **YouTube** button launches YouTube explicitly in TV Bro and starts the HUD.
+TV Bro's external URL mode hides its action bar; its WebView profile retains
+the browser session.
 
 ### Enable the Netflix HUD
 

@@ -45,6 +45,36 @@ object ExternalAppLauncher {
         return launchIntent(context, intent, "YouTube in TV Bro")
     }
 
+    fun launchHboMax(context: Context): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.hbomax.com/")).apply {
+            component = TV_BRO_HOME
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        }
+        return launchIntent(context, intent, "HBO Max in TV Bro")
+    }
+
+    fun launchPrimeVideo(context: Context): Boolean {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://www.primevideo.com/region/na/"),
+        ).apply {
+            component = TV_BRO_HOME
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        }
+        return launchIntent(context, intent, "Prime Video in TV Bro")
+    }
+
+    fun launchAppleTv(context: Context): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tv.apple.com/")).apply {
+            component = TV_BRO_HOME
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        }
+        return launchIntent(context, intent, "Apple TV in TV Bro")
+    }
+
     fun launchTvBroSetup(context: Context): Boolean =
         launchIntent(
             context,

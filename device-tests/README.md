@@ -119,6 +119,31 @@ but are intentionally excluded from Git.
 - Camera, microphone, and location permissions remained denied.
 - RobPelo remained default HOME and its service cleaned up normally.
 
+## TV Bro System WebView
+
+- Switched TV Bro 2.1.6 from GeckoView to its System WebView engine.
+- Selected the **Chrome (Desktop)** user-agent preset.
+- `https://httpbin.org/user-agent` confirmed that requests used TV Bro's
+  Windows Chrome 145 desktop user agent rather than an Android mobile user
+  agent.
+- HBO Max no longer redirected to `/intercept/mobile` or attempted to launch
+  the unavailable native Android app.
+- The existing authenticated HBO session loaded the HBO Max Home page and was
+  visible on the Peloton display.
+- ADB screenshots of HBO Max were entirely black even while the physical
+  display rendered the page.
+- System WebView was noticeably more responsive than bundled GeckoView on the
+  reference bike.
+- The WebView browser-data store differs from GeckoView's. Netflix showed its
+  sign-in form after the switch, so previously authenticated services may need
+  a one-time sign-in again.
+- Lightweight checks confirmed that Netflix, YouTube, Prime Video, and Apple
+  TV all rendered under System WebView.
+- HBO playback, DRM, fullscreen, process-restart persistence, and reboot
+  persistence remain untested in this configuration.
+- System WebView with the desktop Chrome user agent is now the selected
+  configuration for all RobPelo streaming tiles.
+
 ## Historical on-device Firefox update checks
 
 - Installed RobPelo version: `0.6.1-firefox-installer`.
@@ -146,7 +171,7 @@ integration. The Mac-side Firefox updater remains available.
   `com.phlox.tvwebbrowser/.activity.main.MainActivity` with
   `https://m.youtube.com`.
 - TV Bro's external URL launch hides its action bar.
-- GeckoView remains the selected engine.
+- System WebView with the desktop Chrome user agent is now the selected engine.
 - YouTube login persists after process restart and full bike reboot.
 - Video, audio, video fullscreen, and RobPelo HUD work together.
 - RobPelo checks the official TV Bro GitHub release at most once daily while
@@ -164,12 +189,30 @@ integration. The Mac-side Firefox updater remains available.
 
 - Peloton SystemUI force-stops the built-in Netflix APK on inactive-
   subscription bikes.
-- The RobPelo Netflix tile now opens `https://www.netflix.com/browse` in TV Bro
-  GeckoView.
+- The RobPelo Netflix tile opens `https://www.netflix.com/browse` in TV Bro.
 - Netflix sign-in, video, audio, fullscreen, and HUD all work.
 - Netflix login persisted after TV Bro force-stop/relaunch.
 - Netflix login persisted after a full bike reboot.
 - The vendor Netflix APK remains installed and unchanged.
+
+## Additional streaming tiles
+
+RobPelo `0.8.0-streaming-grid` adds:
+
+- HBO Max: `https://play.hbomax.com/`
+- Prime Video: `https://www.primevideo.com/region/na/`
+- Apple TV: `https://tv.apple.com/`
+
+Only the lightweight procedure was used:
+
+- each URL rendered in TV Bro;
+- TV Bro remained foreground;
+- the HUD appeared;
+- HUD cleanup stopped the ride service and Affernet binding;
+- RobPelo remained default HOME.
+
+No authentication, persistence, playback, fullscreen, DRM, or reboot tests were
+run for these services.
 
 ## Reboot validation
 
