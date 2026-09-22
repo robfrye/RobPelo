@@ -1,13 +1,12 @@
 <resources>
     <string name="app_name">RobPelo</string>
-    <string name="home_title">READY TO RIDE?</string>
-    <string name="home_subtitle">Choose an experience</string>
     <string name="diagnostics">Diagnostics</string>
     <string name="open_peloton">Peloton Home</string>
     <string name="peloton_launcher_unavailable">The Peloton launcher is not available.</string>
-    <string name="open_settings">Settings</string>
+    <string name="open_settings_menu">Open settings menu</string>
+    <string name="open_settings">Android settings</string>
     <string name="settings_unavailable">Android Settings is not available.</string>
-    <string name="check_firefox_updates">Check TV Bro Updates</string>
+    <string name="check_firefox_updates">Check for Updates</string>
     <string name="checking_firefox">Checking TV Bro…</string>
     <string name="firefox_current">TV Bro %1$s is current.</string>
     <string name="firefox_update_available">TV Bro %1$s is available — tap Update TV Bro.</string>

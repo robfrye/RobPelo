@@ -399,11 +399,13 @@ Current TV Bro allowlist:
 
 Utility actions:
 
-- Diagnostics
 - Peloton Home, which temporarily opens the stock
   `com.peloton.activation.ActivationActivity` without changing the default HOME
-- Settings, which opens Android's standard settings homepage without changing
-  the default HOME
+- an upper-right settings panel containing:
+  - Android settings, which opens Android's standard settings homepage without
+    changing the default HOME
+  - Diagnostics
+  - Check for Updates, which runs the authenticated TV Bro update flow
 
 Future apps can be added through a small compile-time allowlist. Avoid a
 general-purpose app drawer until there is a concrete need.

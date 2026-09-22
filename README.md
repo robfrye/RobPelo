@@ -17,7 +17,8 @@ It provides:
 - Apple TV through TV Bro System WebView with the telemetry HUD;
 - temporary access to the stock Peloton experience without changing the default
   HOME;
-- direct access to Android Settings from the HOME utility row.
+- an upper-right settings menu with Android settings, telemetry diagnostics,
+  and TV Bro update checks.
 
 RobPelo runs as a normal Android application. It does not require root,
 bootloader unlocking, firmware modification, or replacement of Peloton system

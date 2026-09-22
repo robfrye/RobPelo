@@ -2,7 +2,10 @@ package com.robpelo.companion
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -11,8 +14,12 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.GridLayout
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import com.robpelo.companion.update.TvBroRelease
@@ -31,6 +38,7 @@ class HomeActivity : Activity() {
     private lateinit var tvBroUpdater: TvBroUpdater
     private lateinit var tvBroUpdateNotice: TextView
     private lateinit var tvBroUpdateButton: Button
+    private lateinit var settingsPopup: PopupWindow
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,22 +105,34 @@ class HomeActivity : Activity() {
     }
 
     override fun onDestroy() {
+        if (::settingsPopup.isInitialized) {
+            settingsPopup.dismiss()
+        }
         tvBroUpdater.shutdown()
         super.onDestroy()
     }
 
-    private fun buildContentView(): LinearLayout {
-        val root = LinearLayout(this).apply {
+    private fun buildContentView(): View {
+        val root = FrameLayout(this).apply {
+            setBackgroundColor(getColor(R.color.background))
+        }
+        root.addView(
+            ImageView(this).apply {
+                setImageResource(R.drawable.home_background)
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                contentDescription = null
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            },
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setPadding(dp(40), dp(24), dp(40), dp(24))
-            setBackgroundColor(getColor(R.color.background))
         }
-        root.addView(textView(getString(R.string.home_title), 48f, true))
-        root.addView(textView(getString(R.string.home_subtitle), 21f, false).apply {
-            setTextColor(getColor(R.color.secondary_text))
-        }, marginLayoutParams(topDp = 8))
-
         val tiles = GridLayout(this).apply {
             columnCount = 3
             alignmentMode = GridLayout.ALIGN_BOUNDS
@@ -136,21 +156,9 @@ class HomeActivity : Activity() {
         tiles.addView(tile(getString(R.string.open_apple_tv)) {
             requestAppleTvWithHud()
         }, tileLayoutParams())
-        root.addView(tiles, marginLayoutParams(topDp = 16))
+        content.addView(tiles, marginLayoutParams(topDp = 16))
 
-        val utilities = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-        }
-        utilities.addView(Button(this).apply {
-            text = getString(R.string.diagnostics)
-            minWidth = dp(220)
-            minHeight = dp(58)
-            setOnClickListener {
-                startActivity(Intent(this@HomeActivity, DiagnosticActivity::class.java))
-            }
-        })
-        utilities.addView(Button(this).apply {
+        content.addView(Button(this).apply {
             text = getString(R.string.open_peloton)
             minWidth = dp(220)
             minHeight = dp(58)
@@ -163,37 +171,105 @@ class HomeActivity : Activity() {
                     ).show()
                 }
             }
-        }, marginLayoutParams(leftDp = 24))
-        utilities.addView(Button(this).apply {
-            text = getString(R.string.open_settings)
-            minWidth = dp(220)
-            minHeight = dp(58)
+        }, marginLayoutParams(topDp = 20))
+
+        root.addView(
+            content,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
+
+        settingsPopup = buildSettingsPopup()
+        root.addView(ImageButton(this).apply {
+            contentDescription = getString(R.string.open_settings_menu)
+            setImageResource(R.drawable.ic_settings)
+            imageTintList = ColorStateList.valueOf(getColor(R.color.primary_text))
+            setPadding(dp(15), dp(15), dp(15), dp(15))
+            background = roundedBackground(getColor(R.color.panel), dp(14), dp(1))
             setOnClickListener {
-                if (!ExternalAppLauncher.launchSettings(this@HomeActivity)) {
-                    Toast.makeText(
-                        this@HomeActivity,
-                        R.string.settings_unavailable,
-                        Toast.LENGTH_LONG,
-                    ).show()
+                if (settingsPopup.isShowing) {
+                    settingsPopup.dismiss()
+                } else {
+                    settingsPopup.showAtLocation(
+                        root,
+                        Gravity.TOP or Gravity.END,
+                        dp(32),
+                        dp(92),
+                    )
                 }
             }
-        }, marginLayoutParams(leftDp = 24))
+        }, FrameLayout.LayoutParams(dp(64), dp(64), Gravity.TOP or Gravity.END).apply {
+            topMargin = dp(24)
+            marginEnd = dp(32)
+        })
+        return root
+    }
+
+    private fun buildSettingsPopup(): PopupWindow {
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(20), dp(20), dp(20))
+            background = roundedBackground(getColor(R.color.panel), dp(16), dp(1))
+            elevation = dp(12).toFloat()
+        }
+        panel.addView(settingsActionButton(getString(R.string.open_settings)) {
+            settingsPopup.dismiss()
+            if (!ExternalAppLauncher.launchSettings(this@HomeActivity)) {
+                Toast.makeText(
+                    this@HomeActivity,
+                    R.string.settings_unavailable,
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        })
+        panel.addView(settingsActionButton(getString(R.string.diagnostics)) {
+            settingsPopup.dismiss()
+            startActivity(Intent(this@HomeActivity, DiagnosticActivity::class.java))
+        }, marginLayoutParams(topDp = 12))
         tvBroUpdateButton = Button(this).apply {
             text = getString(R.string.check_firefox_updates)
-            minWidth = dp(250)
-            minHeight = dp(58)
+            minWidth = dp(320)
+            minHeight = dp(64)
+            textSize = 18f
             setOnClickListener { onTvBroUpdateClicked() }
         }
-        utilities.addView(tvBroUpdateButton, marginLayoutParams(leftDp = 24))
-        root.addView(utilities, marginLayoutParams(topDp = 20))
+        panel.addView(tvBroUpdateButton, marginLayoutParams(topDp = 12))
 
         tvBroUpdateNotice = textView("", 17f, true).apply {
             visibility = View.GONE
             gravity = Gravity.CENTER
         }
-        root.addView(tvBroUpdateNotice, marginLayoutParams(topDp = 12))
-        return root
+        panel.addView(tvBroUpdateNotice, marginLayoutParams(topDp = 12))
+
+        return PopupWindow(
+            panel,
+            dp(360),
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true,
+        ).apply {
+            isOutsideTouchable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            elevation = dp(12).toFloat()
+        }
     }
+
+    private fun settingsActionButton(label: String, action: () -> Unit): Button =
+        Button(this).apply {
+            text = label
+            minWidth = dp(320)
+            minHeight = dp(64)
+            textSize = 18f
+            setOnClickListener { action() }
+        }
+
+    private fun roundedBackground(color: Int, radius: Int, strokeWidth: Int): GradientDrawable =
+        GradientDrawable().apply {
+            setColor(color)
+            cornerRadius = radius.toFloat()
+            setStroke(strokeWidth, getColor(R.color.accent))
+        }
 
     private fun requestNetflixWithHud() {
         if (!VideoHudLauncher.hasOverlayPermission(this)) {

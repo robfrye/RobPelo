@@ -611,6 +611,9 @@ GeckoView version/configuration is proven stable on this hardware.
 
 ## Alternative standalone browsers
 
+The current recommended next-phase decision and fresh-chat handoff are in
+[BRAVE_MEDIA_BROWSER_PROPOSAL.md](./BRAVE_MEDIA_BROWSER_PROPOSAL.md).
+
 Several browsers can be sideloaded without Google Play and bring their own
 current rendering engine. None can guarantee completely chrome-free YouTube
 browsing because YouTube's manifest requests `minimal-ui`, not `fullscreen`.
@@ -619,47 +622,107 @@ Normal video fullscreen remains separate and generally hides browser controls.
 ### Cromite
 
 - Official source: [Cromite GitHub releases](https://github.com/uazo/cromite/releases/latest)
-- Artifact: `arm64_ChromePublic.apk`
-- Android requirement: Android 10+
-- Engine: bundled Chromium, not System WebView
+- Verified release: `153.0.8010.37`
+- Artifact: `arm64_ChromePublic.apk`, package `org.cromite.cromite`
+- Android requirement: API 29 / Android 10+
+- Engine: current bundled Chromium 153, not System WebView
 - Distribution: single official APK; built-in update notification/install flow
 - Google/YouTube website login: likely to work as normal first-party browser
   navigation without Play Services
 - Cookies: persistent normal profile
+- DRM: intentionally disabled. The maintainer states Widevine will not be
+  enabled on Android, so protected Netflix, Prime Video, HBO Max, and Apple TV
+  playback should be expected to fail.
 - Immersive behavior: normal external URL launches retain browser UI; an
-  installed YouTube PWA may reduce chrome but YouTube requests `minimal-ui`
+  installed YouTube shortcut may reduce chrome but YouTube requests
+  `minimal-ui`. Cromite does not support TWA/WebAPK installation, but documents
+  home shortcuts that launch without its interface.
 
-Cromite is the strongest security/maintenance test candidate but does not
-guarantee a frameless browsing experience.
+Cromite is not a viable common streaming browser because protected media is
+disabled. It remains a possible YouTube-only experiment.
 
 ### Brave
 
 - Official source: [Brave GitHub releases](https://github.com/brave/brave-browser/releases)
-- Artifact: official monolithic `Bravearm64Universal.apk` with checksums and
-  signatures
-- Android requirement: Android 10+
-- Engine: current bundled Chromium
+- Verified release: Brave `1.95.104`, Chromium `153.0.8010.53`
+- Artifact: official `Bravearm64Universal.apk`, package `com.brave.browser`
+- Android requirement: API 29 / Android 10+
+- Engine: current bundled Chromium 153
 - Google/YouTube website login: likely
 - Cookies: persistent
+- DRM: Android Widevine opt-in is implemented, but actual availability,
+  security level, maximum resolution, and per-service acceptance depend on the
+  bike's platform DRM provisioning and service policy.
+- Updates without Play: manual install-over-update from official GitHub
+  releases; the in-app Play update flow is not usable without Play Store.
 - Custom Tabs: supported, but Custom Tabs retain a toolbar
-- Immersive behavior: video fullscreen works; ordinary browsing retains Brave
-  UI
+- Immersive behavior: ordinary external URLs retain Brave UI. Installed PWAs
+  use site-controlled display modes; Brave has no documented arbitrary-URL
+  kiosk or chromeless launch intent. Its internal fullscreen custom-tab and
+  web-app activities are not exported for general use.
 
-Brave is the conservative current-engine alternative to Cromite.
+Brave passes the offline provenance, Android 11, and protected-media capability
+gates. It is the strongest first physical-device candidate, but it cannot
+provide TV Bro-style chrome-free presentation for arbitrary streaming sites.
 
 ### Vivaldi
 
 - Official source and update guidance:
   [Vivaldi Android APK installation](https://help.vivaldi.com/android/android-install/android-install-and-update-vivaldi-mobile/)
-- Official architecture-specific arm64 APK
-- Android requirement: Android 10+
-- Engine: bundled Chromium
+- Verified release: Vivaldi `8.2.4147.93`, based on Chromium 152 ESR with
+  security fixes from Chromium 153
+- Official `Vivaldi.8.2.4147.93_arm64-v8a.apk`, package
+  `com.vivaldi.browser`
+- Android requirement: API 29 / Android 10+
+- Engine: bundled Chromium, not System WebView
 - Google/YouTube website login and persistent cookies: likely
+- DRM: exposes Android protected-content/EME controls. Widevine level,
+  resolution, and service acceptance remain dependent on Peloton platform
+  provisioning and service policy.
 - PWA support: documented, but YouTube's `minimal-ui` still prevents assuming a
   truly frameless window
-- Updates: manual for APK installations
+- Immersive behavior: ordinary external URLs and non-PWA shortcuts open the
+  normal browser UI. Installed PWAs open separately using their site-controlled
+  display mode. There is no documented arbitrary-URL fullscreen/kiosk mode,
+  and useful internal web-app/custom-tab activities are not exported.
+- Updates: manual install-over-update from Vivaldi's official direct-APK page
 
-Vivaldi has the clearest vendor-hosted direct APK path.
+Vivaldi also passes the provenance, Android 11, and protected-media capability
+gates. It has the clearest vendor-hosted APK path but no generic chromeless
+launch advantage over Brave.
+
+### Kiwi
+
+- Official final release:
+  [Kiwi Browser GitHub release](https://github.com/kiwibrowser/src.next/releases/tag/14310011181)
+- Package: `com.kiwibrowser.browser`
+- Android requirement: API 24 / Android 7+
+- Effective engine: Chromium 132-era code with a later 137 version/user-agent
+  string
+- DRM: Widevine and proprietary-codec integration were compiled in, but remain
+  dependent on the bike and each service
+- Immersive behavior: ordinary URLs retain browser UI; PWA/TWA behavior is
+  site-controlled and does not provide an arbitrary-URL kiosk mode
+- Update path: none. The project is archived and explicitly unmaintained after
+  January 2025.
+
+Kiwi is rejected for credentials and streaming because an abandoned browser
+cannot receive security or compatibility fixes.
+
+### Offline candidate comparison
+
+| Browser | Official arm64 Android 11 artifact | Protected-media path | Arbitrary URL without browser chrome | Offline verdict |
+|---|---|---|---|---|
+| Brave | Yes | Yes, platform-dependent Widevine opt-in | No | First test candidate |
+| Vivaldi | Yes | Yes, platform-dependent protected content | No | Second test candidate |
+| Cromite | Yes | No; DRM deliberately disabled | Shortcut only; no general kiosk API | Reject as common browser |
+| Kiwi | Yes | Compiled in, platform-dependent | No | Reject as abandoned |
+
+For Brave and Vivaldi, only Apple TV advertises `display: standalone`. YouTube
+requests `minimal-ui`; Netflix, Prime Video, and HBO Max do not advertise
+installable web manifests. Therefore neither current candidate can reproduce
+TV Bro's chrome-free external-URL behavior across all five services without a
+maintained browser fork or vendor cooperation.
 
 ### TV Bro
 
@@ -785,12 +848,12 @@ signed update channel. They are not recommended for a shareable RobPelo setup.
 
 ### Recommended reversible test order
 
-1. **TV Bro Gecko-included arm64** if hidden UI is the primary goal. Startup,
-   Google login, reboot persistence, fullscreen, and HUD coexistence are now
-   verified on the reference bike; updater behavior remains to be tested.
-2. **Cromite arm64** if current security updates and login reliability are more
-   important than completely hidden UI. Test its YouTube PWA/minimal-UI mode.
-3. **Brave arm64** as the conservative Chromium alternative.
+1. **Brave arm64** for the first current-Chromium, Widevine-capable test.
+2. **Vivaldi arm64** if Brave fails service compatibility or presentation
+   requirements.
+3. Keep **TV Bro System WebView** installed as the current reversible fallback.
+4. Do not use **Cromite** for DRM services or **Kiwi** for any authenticated
+   long-term use.
 
 Install any candidate as an additional package and launch it explicitly from a
 temporary test command. Do not replace Firefox or change the default browser
