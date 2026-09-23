@@ -26,16 +26,15 @@ if [[ "$actual_tag" != "$expected_tag" ]]; then
     exit 1
 fi
 
-version_file="$chromium_src/chrome/VERSION"
+version_file="$brave_src/package.json"
 if [[ ! -f "$version_file" ]]; then
-    echo "expected Chromium version metadata at $version_file" >&2
+    echo "expected Brave version metadata at $version_file" >&2
     exit 1
 fi
 actual_chromium_version="$(
-    awk -F= '
-        /^(MAJOR|MINOR|BUILD|PATCH)=/ { values[$1]=$2 }
-        END { print values["MAJOR"] "." values["MINOR"] "." values["BUILD"] "." values["PATCH"] }
-    ' "$version_file"
+    python3 -c \
+        'import json, sys; print(json.load(open(sys.argv[1]))["config"]["projects"]["chrome"]["tag"])' \
+        "$version_file"
 )"
 if [[ "$actual_chromium_version" != "153.0.8010.53" ]]; then
     echo "expected Chromium 153.0.8010.53, found $actual_chromium_version" >&2

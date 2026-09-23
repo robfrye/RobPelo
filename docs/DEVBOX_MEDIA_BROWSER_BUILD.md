@@ -66,6 +66,7 @@ sudo apt-get install -y \
   build-essential \
   ca-certificates \
   curl \
+  default-jdk-headless \
   git \
   pkg-config \
   python3 \
@@ -93,6 +94,7 @@ Verify:
 ```bash
 git --version
 python3 --version
+javac --version
 node --version
 pnpm --version
 ```
@@ -172,14 +174,15 @@ Verify the synchronized versions:
 
 ```bash
 git -C src/brave describe --tags --exact-match
-cat src/chrome/VERSION
+cd src/brave
+pnpm run versions
 ```
 
 Required:
 
 ```text
 brave-core: v1.95.104
-Chromium:   153.0.8010.53
+Chromium:   chrome refs/tags/153.0.8010.53
 ```
 
 Stop if either version differs.
