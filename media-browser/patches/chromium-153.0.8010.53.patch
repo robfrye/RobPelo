@@ -1,0 +1,42 @@
+# Chromium 153.0.8010.53 manifest hardening for the dedicated media package.
+diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
+index 6967cc4776d1f..d82b07a7eaeb7 100644
+--- a/chrome/android/java/AndroidManifest.xml
++++ b/chrome/android/java/AndroidManifest.xml
+@@ -18,6 +18,10 @@ found in the LICENSE file.
+     <!-- android:versionCode and android:versionName is set through gyp. See build/common.gypi -->
+ 
+     <uses-feature android:glEsVersion="0x00030000" />
++
++    <permission
++        android:name="com.robpelo.browser.permission.OPEN_MEDIA"
++        android:protectionLevel="signature" />
+ 
+ 
+     <!-- Needed for
+@@ -250,6 +254,6 @@ found in the LICENSE file.
+         <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
+             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
+-            android:exported="true">
++            android:exported="false">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
+@@ -595,7 +599,7 @@ found in the LICENSE file.
+         <!-- ChromeTabbedActivity related -->
+         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
+             android:theme="@style/Theme.Chromium.TabbedMode"
+-            android:exported="true"
++            android:exported="false"
+             android:launchMode="singleTask"
+             {% if is_desktop_android == "true" %}
+             android:persistableMode="persistAcrossReboots"
+@@ -636,7 +640,7 @@ found in the LICENSE file.
+         </activity>
+         <activity-alias android:name="com.google.android.apps.chrome.Main"
+             android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
+-            android:exported="true">
++            android:exported="false">
+             <property android:name="android.window.PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI"
+                 android:value="true" />
+             <intent-filter>

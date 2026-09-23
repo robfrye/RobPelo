@@ -1,7 +1,9 @@
 # Peloton Companion Architecture Proposal
 
-Status: implemented through Stage 4, including TV Bro-based YouTube + HUD, and
-validated on the target device.
+Status: HOME/HUD is validated on the target device. The typed
+`com.robpelo.browser` launch integration and pinned Brave downstream source
+overlay are implemented; the downstream browser APK still requires a supported
+Linux Brave build and physical validation. TV Bro remains an explicit rollback.
 
 This design is based on the connected `PLTN-RB1VQ` running Android 11/API 30
 and Peloton build `RQ.260424.A`. It deliberately defers launcher replacement
@@ -69,18 +71,26 @@ Peloton Companion APK
 |           Adds/removes the Android overlay window
 |
 +-- ExternalAppLauncher
-      Launches Netflix and future allowlisted applications
+      Launches Peloton, Android settings, and TV Bro setup
+|
++-- StreamingBrowserLauncher
+|     |
+|     +-- RobPeloMediaBrowserLauncher
+|     |     Validates package, component, version, and matching signer
+|     |
+|     +-- TvBroLauncher
+|           Explicit rollback only; never selected as a silent fallback
 |
 +-- TvBroUpdater
-      Checks TV Bro's official GitHub release daily while HOME is active
+      Maintains the rollback browser during migration
       Downloads only after user action
       Verifies digest, package, SDK, version, and signing certificate
       Hands the APK to Android's confirmation UI
 ```
 
-This remains one application and one process. The internal boundaries make
-telemetry reusable by Just Ride and the HUD without introducing multiple
-modules, dependency injection frameworks, or inter-process IPC of our own.
+The HOME/telemetry application remains one process. Protected web media runs in
+the independent `com.robpelo.browser` process so browser crashes, profile
+updates, and the Chromium payload remain isolated from HOME and telemetry.
 
 ## Package identity
 
@@ -379,17 +389,17 @@ Initial tiles:
 
 - Just Ride
 - Netflix
-- YouTube in TV Bro GeckoView
-- HBO Max in TV Bro GeckoView
-- Prime Video in TV Bro GeckoView
-- Apple TV in TV Bro GeckoView
+- YouTube
+- HBO Max
+- Prime Video
+- Apple TV
 
 The launcher uses a compact three-column `GridLayout`. Current labels omit
 implementation details such as `+ HUD`; Netflix and YouTube still start the
 telemetry HUD automatically. Additional allowlisted streaming services wrap to
 later rows.
 
-Current TV Bro allowlist:
+Current media-browser destinations:
 
 - Netflix: `https://www.netflix.com/browse`
 - YouTube: `https://m.youtube.com`
@@ -405,7 +415,10 @@ Utility actions:
   - Android settings, which opens Android's standard settings homepage without
     changing the default HOME
   - Diagnostics
-  - Check for Updates, which runs the authenticated TV Bro update flow
+  - an explicit RobPelo Media Browser / TV Bro rollback route toggle
+  - a no-HUD media-browser setup launch for Android protected-content
+    permission
+  - Check for Updates, which maintains TV Bro only during rollback retention
 
 Future apps can be added through a small compile-time allowlist. Avoid a
 general-purpose app drawer until there is a concrete need.
@@ -441,7 +454,8 @@ Do not request `onepeloton.permission.ACCESS_SENSOR_SERVICE`.
 ### Stage 3
 
 - `android.permission.SYSTEM_ALERT_WINDOW`
-- Package visibility for `com.netflix.mediaclient`
+- Package visibility for `com.robpelo.browser`
+- Signature permission `com.robpelo.browser.permission.OPEN_MEDIA`
 
 If a modern target SDK requires notification permission on newer Android
 versions, declare it appropriately, but do not request irrelevant permissions
@@ -458,7 +472,7 @@ Do not request:
 - Bluetooth/location permission until heart-rate support is actually added;
 - Peloton subscription or signature permissions.
 
-TV Bro installation/updating requires `INTERNET` and
+TV Bro rollback installation/updating requires `INTERNET` and
 `REQUEST_INSTALL_PACKAGES`. The latter is used only to hand a verified TV Bro
 APK to Android's user-confirmed package installer; RobPelo cannot install
 silently.
@@ -595,10 +609,10 @@ Every device-changing test must:
 5. verify the expected result;
 6. retain a tested rollback command.
 
-TV Bro-based streaming services use the lightweight default procedure in
-[STREAMING_SERVICE_TEST_PROCEDURE.md](./STREAMING_SERVICE_TEST_PROCEDURE.md).
-The full login/restart/reboot/fullscreen/DRM matrix is run only when explicitly
-requested or when a service-specific failure warrants escalation.
+The replacement media browser must pass the full login, process-restart,
+reboot, fullscreen, DRM, HUD, Back, and HOME matrix before TV Bro rollback
+retention ends. Results and explicitly waived checks are recorded in
+[device-tests/README.md](../device-tests/README.md).
 
 The first APK installation completed after its source, manifest, build output,
 and exact `adb install` command were reviewed. Results are recorded in

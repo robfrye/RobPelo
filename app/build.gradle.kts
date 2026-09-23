@@ -11,8 +11,8 @@ android {
         applicationId = "com.robpelo.companion"
         minSdk = 30
         targetSdk = 34
-        versionCode = 18
-        versionName = "0.8.0-streaming-grid"
+        versionCode = 19
+        versionName = "0.9.0-media-browser-routing"
 
     }
 

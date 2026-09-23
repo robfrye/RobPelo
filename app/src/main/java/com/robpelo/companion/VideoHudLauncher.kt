@@ -4,6 +4,10 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import com.robpelo.companion.browser.BrowserLaunchResult
+import com.robpelo.companion.browser.HudLaunchCoordinator
+import com.robpelo.companion.browser.StreamingBrowserLauncher
+import com.robpelo.companion.browser.StreamingDestination
 import com.robpelo.companion.ride.RideTelemetryService
 
 object VideoHudLauncher {
@@ -19,39 +23,26 @@ object VideoHudLauncher {
         )
     }
 
-    fun launchNetflix(activity: Activity): Boolean =
-        launchWithHud(activity) { ExternalAppLauncher.launchNetflix(activity) }
-
-    fun launchYouTube(activity: Activity): Boolean =
-        launchWithHud(activity) { ExternalAppLauncher.launchYouTubeInTvBro(activity) }
-
-    fun launchHboMax(activity: Activity): Boolean =
-        launchWithHud(activity) { ExternalAppLauncher.launchHboMax(activity) }
-
-    fun launchPrimeVideo(activity: Activity): Boolean =
-        launchWithHud(activity) { ExternalAppLauncher.launchPrimeVideo(activity) }
-
-    fun launchAppleTv(activity: Activity): Boolean =
-        launchWithHud(activity) { ExternalAppLauncher.launchAppleTv(activity) }
-
-    private fun launchWithHud(
+    fun launch(
         activity: Activity,
-        launchDestination: () -> Boolean,
-    ): Boolean {
-        activity.startForegroundService(
-            Intent(activity, RideTelemetryService::class.java).apply {
-                action = RideTelemetryService.ACTION_START_HUD
+        browserLauncher: StreamingBrowserLauncher,
+        destination: StreamingDestination,
+    ): BrowserLaunchResult =
+        HudLaunchCoordinator.launch(
+            startHud = {
+                activity.startForegroundService(
+                    Intent(activity, RideTelemetryService::class.java).apply {
+                        action = RideTelemetryService.ACTION_START_HUD
+                    },
+                )
+            },
+            launchBrowser = { browserLauncher.launch(destination) },
+            stopHud = {
+                activity.startService(
+                    Intent(activity, RideTelemetryService::class.java).apply {
+                        action = RideTelemetryService.ACTION_END_RIDE
+                    },
+                )
             },
         )
-        if (launchDestination()) {
-            return true
-        }
-
-        activity.startService(
-            Intent(activity, RideTelemetryService::class.java).apply {
-                action = RideTelemetryService.ACTION_END_RIDE
-            },
-        )
-        return false
-    }
 }

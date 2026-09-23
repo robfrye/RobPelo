@@ -33,6 +33,7 @@ Set these variables in each new Terminal session:
 
 ```bash
 COMPANION_PACKAGE='com.robpelo.companion'
+MEDIA_BROWSER_PACKAGE='com.robpelo.browser'
 STOCK_HOME='com.peloton.launcher/.LauncherActivity'
 ANDROID_USER='0'
 ```
@@ -41,6 +42,7 @@ Confirm the package variable before running device-changing commands:
 
 ```bash
 test "$COMPANION_PACKAGE" = 'com.robpelo.companion'
+test "$MEDIA_BROWSER_PACKAGE" = 'com.robpelo.browser'
 ```
 
 Before changing HOME or granting special access, append the companion's
@@ -154,6 +156,17 @@ Expected results:
 
 Uninstalling removes only the companion APK, its private data, and its granted
 permissions.
+
+The media browser is a separate package and is not removed by that command.
+Keep it installed when rolling HOME back unless its profile is no longer
+needed. Uninstalling it permanently deletes its cookies, authenticated
+sessions, permissions, and local storage. If that destructive cleanup is
+explicitly approved:
+
+```bash
+adb shell am force-stop --user "$ANDROID_USER" "$MEDIA_BROWSER_PACKAGE"
+adb uninstall "$MEDIA_BROWSER_PACKAGE"
+```
 
 ## Narrow fallback if the normal HOME restore fails
 

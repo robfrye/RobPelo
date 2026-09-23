@@ -1,0 +1,45 @@
+diff --git a/android/brave_java_sources.gni b/android/brave_java_sources.gni
+index 1ab1aba68..6e6c96571 100644
+--- a/android/brave_java_sources.gni
++++ b/android/brave_java_sources.gni
+@@ -214,6 +214,9 @@ brave_java_sources = [
+   "../../brave/android/java/org/chromium/chrome/browser/custom_layout/popup_window_tooltip/PopupWindowTooltipUtils.java",
+   "../../brave/android/java/org/chromium/chrome/browser/customtabs/BraveAccountCustomTabActivity.java",
+   "../../brave/android/java/org/chromium/chrome/browser/customtabs/FullScreenCustomTabActivity.java",
++  "../../brave/android/java/com/robpelo/browser/MediaDestination.java",
++  "../../brave/android/java/com/robpelo/browser/MediaViewerActivity.java",
++  "../../brave/android/java/com/robpelo/browser/MediaViewerCustomTabActivity.java",
+   "../../brave/android/java/org/chromium/chrome/browser/customtabs/FullScreenCustomTabRootUiCoordinator.java",
+   "../../brave/android/java/org/chromium/chrome/browser/customtabs/features/partialcustomtab/BravePartialCustomTabBottomSheetStrategy.java",
+   "../../brave/android/java/org/chromium/chrome/browser/customtabs/features/toolbar/BraveCustomTabToolbarButtonsViewBinder.java",
+diff --git a/android/java/AndroidManifest.xml b/android/java/AndroidManifest.xml
+index 1e23dfdb9..09593f46e 100644
+--- a/android/java/AndroidManifest.xml
++++ b/android/java/AndroidManifest.xml
+@@ -17,6 +17,26 @@
+     android:theme="@style/BottomSheetActivityTheme"
+     android:exported="false"/>
+ 
++<activity
++    android:name="com.robpelo.browser.MediaViewerActivity"
++    android:exported="true"
++    android:excludeFromRecents="true"
++    android:permission="com.robpelo.browser.permission.OPEN_MEDIA"
++    android:screenOrientation="landscape"
++    android:theme="@android:style/Theme.NoDisplay">
++    <intent-filter>
++        <action android:name="com.robpelo.browser.action.OPEN_MEDIA" />
++        <category android:name="android.intent.category.DEFAULT" />
++    </intent-filter>
++</activity>
++
++<activity
++    android:name="com.robpelo.browser.MediaViewerCustomTabActivity"
++    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|navigation"
++    android:exported="false"
++    android:screenOrientation="landscape"
++    android:theme="@style/BottomSheetActivityTheme"/>
++
+ <!-- Onboarding notification -->
+ <receiver android:name="org.chromium.chrome.browser.notifications.BraveOnboardingNotification"
+     android:exported="false">

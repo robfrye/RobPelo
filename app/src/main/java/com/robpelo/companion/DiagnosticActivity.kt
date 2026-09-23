@@ -10,12 +10,17 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import com.robpelo.companion.browser.BrowserLaunchResult
+import com.robpelo.companion.browser.StreamingBrowserRouter
+import com.robpelo.companion.browser.StreamingDestination
+import com.robpelo.companion.browser.toUserMessage
 import com.robpelo.companion.telemetry.AffernetTelemetryClient
 import com.robpelo.companion.telemetry.ConnectionState
 import com.robpelo.companion.telemetry.RawBikeSample
 
 class DiagnosticActivity : Activity(), AffernetTelemetryClient.Listener {
     private lateinit var telemetryClient: AffernetTelemetryClient
+    private lateinit var streamingBrowserRouter: StreamingBrowserRouter
     private lateinit var statusView: TextView
     private lateinit var cadenceView: TextView
     private lateinit var resistanceView: TextView
@@ -29,6 +34,7 @@ class DiagnosticActivity : Activity(), AffernetTelemetryClient.Listener {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         telemetryClient = AffernetTelemetryClient(this, this)
+        streamingBrowserRouter = StreamingBrowserRouter(this)
         setContentView(buildContentView())
     }
 
@@ -206,8 +212,13 @@ class DiagnosticActivity : Activity(), AffernetTelemetryClient.Listener {
     }
 
     private fun launchNetflixWithHud() {
-        if (!VideoHudLauncher.launchNetflix(this)) {
-            Toast.makeText(this, R.string.netflix_unavailable, Toast.LENGTH_LONG).show()
+        val result = VideoHudLauncher.launch(
+            this,
+            streamingBrowserRouter,
+            StreamingDestination.NETFLIX,
+        )
+        if (result != BrowserLaunchResult.Success) {
+            Toast.makeText(this, result.toUserMessage(this), Toast.LENGTH_LONG).show()
         }
     }
 }

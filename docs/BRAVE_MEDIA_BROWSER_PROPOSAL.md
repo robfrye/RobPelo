@@ -1,5 +1,22 @@
 # Brave Media Browser Proposal
 
+## Implementation status
+
+Stage 1 was performed on 2026-09-23 and is recorded in
+[the device-test log](../device-tests/README.md#brave-compatibility-validation).
+The verified passes include YouTube authentication persistence, Prime Video
+protected HD playback, and HBO Max protected playback with a desktop-site
+policy. Netflix, Apple TV, and the remaining HUD/Back checks were explicitly
+waived and are not recorded as passes.
+
+Stage 2 source work now lives under [`media-browser/`](../media-browser/). The
+HOME APK uses the typed `com.robpelo.browser/.MediaViewerActivity` contract and
+retains TV Bro as an explicit persisted rollback route. The pinned Brave source
+overlay and policy tests are implemented, but a complete Brave/Chromium APK has
+not yet been built or physically accepted. The x86-64 Linux build handoff is
+documented in
+[the Microsoft Dev Box runbook](./DEVBOX_MEDIA_BROWSER_BUILD.md).
+
 ## Purpose
 
 This document is the handoff for the next RobPelo streaming-browser phase.

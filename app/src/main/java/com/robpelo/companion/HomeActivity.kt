@@ -22,27 +22,31 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
+import com.robpelo.companion.browser.BrowserLaunchResult
+import com.robpelo.companion.browser.BrowserRoute
+import com.robpelo.companion.browser.StreamingBrowserRouter
+import com.robpelo.companion.browser.StreamingDestination
+import com.robpelo.companion.browser.toUserMessage
 import com.robpelo.companion.update.TvBroRelease
 import com.robpelo.companion.update.TvBroUpdateState
 import com.robpelo.companion.update.TvBroUpdater
 
 class HomeActivity : Activity() {
-    private var launchNetflixAfterOverlayGrant = false
-    private var launchYouTubeAfterOverlayGrant = false
-    private var launchHboMaxAfterOverlayGrant = false
-    private var launchPrimeVideoAfterOverlayGrant = false
-    private var launchAppleTvAfterOverlayGrant = false
+    private var destinationAfterOverlayGrant: StreamingDestination? = null
     private var pendingTvBroInstall: TvBroRelease? = null
     private var awaitingTvBroInstallResult = false
     private var tvBroUpdateState: TvBroUpdateState? = null
     private lateinit var tvBroUpdater: TvBroUpdater
+    private lateinit var streamingBrowserRouter: StreamingBrowserRouter
     private lateinit var tvBroUpdateNotice: TextView
     private lateinit var tvBroUpdateButton: Button
+    private lateinit var browserRouteButton: Button
     private lateinit var settingsPopup: PopupWindow
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         tvBroUpdater = TvBroUpdater(this)
+        streamingBrowserRouter = StreamingBrowserRouter(this)
         setContentView(buildContentView())
     }
 
@@ -60,40 +64,13 @@ class HomeActivity : Activity() {
                 return
             }
         }
+        val pendingDestination = destinationAfterOverlayGrant
         if (
-            launchNetflixAfterOverlayGrant &&
+            pendingDestination != null &&
             VideoHudLauncher.hasOverlayPermission(this)
         ) {
-            launchNetflixAfterOverlayGrant = false
-            launchNetflixWithHud()
-        }
-        if (
-            launchYouTubeAfterOverlayGrant &&
-            VideoHudLauncher.hasOverlayPermission(this)
-        ) {
-            launchYouTubeAfterOverlayGrant = false
-            launchYouTubeWithHud()
-        }
-        if (
-            launchHboMaxAfterOverlayGrant &&
-            VideoHudLauncher.hasOverlayPermission(this)
-        ) {
-            launchHboMaxAfterOverlayGrant = false
-            launchHboMaxWithHud()
-        }
-        if (
-            launchPrimeVideoAfterOverlayGrant &&
-            VideoHudLauncher.hasOverlayPermission(this)
-        ) {
-            launchPrimeVideoAfterOverlayGrant = false
-            launchPrimeVideoWithHud()
-        }
-        if (
-            launchAppleTvAfterOverlayGrant &&
-            VideoHudLauncher.hasOverlayPermission(this)
-        ) {
-            launchAppleTvAfterOverlayGrant = false
-            launchAppleTvWithHud()
+            destinationAfterOverlayGrant = null
+            launchStreamingWithHud(pendingDestination)
         }
         val pendingRelease = pendingTvBroInstall
         if (pendingRelease != null && packageManager.canRequestPackageInstalls()) {
@@ -142,19 +119,19 @@ class HomeActivity : Activity() {
             startActivity(Intent(this, JustRideActivity::class.java))
         }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_netflix)) {
-            requestNetflixWithHud()
+            requestStreamingWithHud(StreamingDestination.NETFLIX)
         }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_youtube)) {
-            requestYouTubeWithHud()
+            requestStreamingWithHud(StreamingDestination.YOUTUBE)
         }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_hbo_max)) {
-            requestHboMaxWithHud()
+            requestStreamingWithHud(StreamingDestination.HBO_MAX)
         }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_prime_video)) {
-            requestPrimeVideoWithHud()
+            requestStreamingWithHud(StreamingDestination.PRIME_VIDEO)
         }, tileLayoutParams())
         tiles.addView(tile(getString(R.string.open_apple_tv)) {
-            requestAppleTvWithHud()
+            requestStreamingWithHud(StreamingDestination.APPLE_TV)
         }, tileLayoutParams())
         content.addView(tiles, marginLayoutParams(topDp = 16))
 
@@ -228,6 +205,20 @@ class HomeActivity : Activity() {
             settingsPopup.dismiss()
             startActivity(Intent(this@HomeActivity, DiagnosticActivity::class.java))
         }, marginLayoutParams(topDp = 12))
+        browserRouteButton = settingsActionButton("", ::toggleBrowserRoute)
+        updateBrowserRouteButton()
+        panel.addView(browserRouteButton, marginLayoutParams(topDp = 12))
+        panel.addView(settingsActionButton(getString(R.string.open_media_browser_setup)) {
+            settingsPopup.dismiss()
+            val result = streamingBrowserRouter.launchMediaBrowserSetup()
+            if (result != BrowserLaunchResult.Success) {
+                Toast.makeText(
+                    this@HomeActivity,
+                    result.toUserMessage(this@HomeActivity),
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        }, marginLayoutParams(topDp = 12))
         tvBroUpdateButton = Button(this).apply {
             text = getString(R.string.check_firefox_updates)
             minWidth = dp(320)
@@ -271,9 +262,9 @@ class HomeActivity : Activity() {
             setStroke(strokeWidth, getColor(R.color.accent))
         }
 
-    private fun requestNetflixWithHud() {
+    private fun requestStreamingWithHud(destination: StreamingDestination) {
         if (!VideoHudLauncher.hasOverlayPermission(this)) {
-            launchNetflixAfterOverlayGrant = true
+            destinationAfterOverlayGrant = destination
             Toast.makeText(
                 this,
                 R.string.overlay_permission_required,
@@ -282,93 +273,47 @@ class HomeActivity : Activity() {
             VideoHudLauncher.openOverlaySettings(this)
             return
         }
-        launchNetflixWithHud()
+        launchStreamingWithHud(destination)
     }
 
-    private fun launchNetflixWithHud() {
-        if (!VideoHudLauncher.launchNetflix(this)) {
-            Toast.makeText(this, R.string.netflix_unavailable, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun requestYouTubeWithHud() {
-        if (!VideoHudLauncher.hasOverlayPermission(this)) {
-            launchYouTubeAfterOverlayGrant = true
+    private fun launchStreamingWithHud(destination: StreamingDestination) {
+        val result = VideoHudLauncher.launch(this, streamingBrowserRouter, destination)
+        if (result != BrowserLaunchResult.Success) {
             Toast.makeText(
                 this,
-                R.string.overlay_permission_required,
+                result.toUserMessage(this),
                 Toast.LENGTH_LONG,
             ).show()
-            VideoHudLauncher.openOverlaySettings(this)
-            return
-        }
-        launchYouTubeWithHud()
-    }
-
-    private fun launchYouTubeWithHud() {
-        if (!VideoHudLauncher.launchYouTube(this)) {
-            Toast.makeText(this, R.string.youtube_unavailable, Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun requestHboMaxWithHud() {
-        if (!VideoHudLauncher.hasOverlayPermission(this)) {
-            launchHboMaxAfterOverlayGrant = true
-            Toast.makeText(
-                this,
-                R.string.overlay_permission_required,
-                Toast.LENGTH_LONG,
-            ).show()
-            VideoHudLauncher.openOverlaySettings(this)
-            return
+    private fun toggleBrowserRoute() {
+        val newRoute = when (streamingBrowserRouter.route) {
+            BrowserRoute.MEDIA_BROWSER -> BrowserRoute.TV_BRO
+            BrowserRoute.TV_BRO -> BrowserRoute.MEDIA_BROWSER
         }
-        launchHboMaxWithHud()
+        streamingBrowserRouter.setRoute(newRoute)
+        updateBrowserRouteButton()
+        settingsPopup.dismiss()
+        Toast.makeText(
+            this,
+            if (newRoute == BrowserRoute.MEDIA_BROWSER) {
+                R.string.media_browser_route_active
+            } else {
+                R.string.tvbro_route_active
+            },
+            Toast.LENGTH_LONG,
+        ).show()
     }
 
-    private fun launchHboMaxWithHud() {
-        if (!VideoHudLauncher.launchHboMax(this)) {
-            Toast.makeText(this, R.string.hbo_max_unavailable, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun requestPrimeVideoWithHud() {
-        if (!VideoHudLauncher.hasOverlayPermission(this)) {
-            launchPrimeVideoAfterOverlayGrant = true
-            Toast.makeText(
-                this,
-                R.string.overlay_permission_required,
-                Toast.LENGTH_LONG,
-            ).show()
-            VideoHudLauncher.openOverlaySettings(this)
-            return
-        }
-        launchPrimeVideoWithHud()
-    }
-
-    private fun launchPrimeVideoWithHud() {
-        if (!VideoHudLauncher.launchPrimeVideo(this)) {
-            Toast.makeText(this, R.string.prime_video_unavailable, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun requestAppleTvWithHud() {
-        if (!VideoHudLauncher.hasOverlayPermission(this)) {
-            launchAppleTvAfterOverlayGrant = true
-            Toast.makeText(
-                this,
-                R.string.overlay_permission_required,
-                Toast.LENGTH_LONG,
-            ).show()
-            VideoHudLauncher.openOverlaySettings(this)
-            return
-        }
-        launchAppleTvWithHud()
-    }
-
-    private fun launchAppleTvWithHud() {
-        if (!VideoHudLauncher.launchAppleTv(this)) {
-            Toast.makeText(this, R.string.apple_tv_unavailable, Toast.LENGTH_LONG).show()
-        }
+    private fun updateBrowserRouteButton() {
+        browserRouteButton.text = getString(
+            if (streamingBrowserRouter.route == BrowserRoute.MEDIA_BROWSER) {
+                R.string.use_tvbro_rollback
+            } else {
+                R.string.use_media_browser
+            },
+        )
     }
 
     private fun onTvBroUpdateClicked() {

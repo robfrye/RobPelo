@@ -214,6 +214,54 @@ Only the lightweight procedure was used:
 No authentication, persistence, playback, fullscreen, DRM, or reboot tests were
 run for these services.
 
+## Brave compatibility validation
+
+Brave Stage 1 was run on 2026-09-23 without changing RobPelo's production tile
+routing:
+
+- Downloaded official Brave `1.95.104` / Chromium `153.0.8010.53` from the
+  Brave GitHub release.
+- Verified `Bravearm64Universal.apk` SHA-256
+  `c6cc741f38b2efa3fc3e18e0be93fa4bb25a28bb93530f3f04f9f64dee05a2d8`.
+- Verified package `com.brave.browser`, minimum SDK 29, target SDK 36, and
+  `arm64-v8a` native ABI.
+- Verified signing-certificate SHA-256
+  `9C:2D:B7:05:13:51:5F:DB:FB:BC:58:5B:3E:DF:3D:71:23:D4:DC:67:C9:4F:FD:30:63:61:C1:D7:9B:BF:18:AC`.
+- Installed Brave as an additional user package. TV Bro and Firefox remained
+  installed, and RobPelo remained the resolved HOME.
+- Declined Brave's optional Web Discovery, crash-reporting, and product-insight
+  onboarding choices.
+- YouTube website sign-in succeeded.
+- YouTube authentication survived a controlled Brave force-stop/relaunch after
+  allowing the profile to flush. An immediate first retry returned signed out,
+  so future test procedures should not force-stop Brave immediately after
+  authentication.
+- YouTube authentication survived a normal bike reboot.
+- YouTube video playback and fullscreen succeeded.
+- Prime Video's protected-content permission, protected playback, fullscreen,
+  and visibly HD-or-better playback succeeded.
+- HBO Max website sign-in succeeded. HBO Max required Brave's persistent
+  per-site **Desktop site** setting; protected playback and fullscreen then
+  succeeded.
+- Brave used approximately 212 MB PSS / 310 MB RSS during onboarding and
+  approximately 157 MB PSS / 230 MB RSS during YouTube playback.
+- No Brave fatal crash was observed.
+
+The installed Peloton app owned a visible `TYPE_APPLICATION_OVERLAY` that
+caused Android to reject Brave's protected-content permission dialog with a
+"close any bubbles or overlays" message. The RobPelo HUD service was not
+running. After explicit approval, `com.peloton.activity` was temporarily
+force-stopped, the overlay disappeared, and the permission prompt succeeded.
+A normal reboot restored the Peloton process.
+
+Brave's onboarding and later reboot temporarily changed the general browser
+role. The pre-test holder, Firefox, was explicitly restored after testing.
+RobPelo remained HOME throughout.
+
+At the user's direction, the remaining Netflix and Apple TV protected-title
+checks and the remaining Brave HUD/Back checks were skipped. They are not
+recorded as passes.
+
 ## Reboot validation
 
 A normal `adb reboot` was tested after RobPelo became the default HOME:

@@ -9,16 +9,14 @@ It provides:
 - a standalone Just Ride experience;
 - live cadence, resistance, and output;
 - locally calculated speed, elapsed time, distance, and total output;
-- signed-in Netflix through TV Bro System WebView with a compact telemetry HUD;
-- immersive signed-in YouTube through TV Bro System WebView with the same telemetry
-  HUD;
-- HBO Max through TV Bro System WebView with the telemetry HUD;
-- Prime Video through TV Bro System WebView with the telemetry HUD;
-- Apple TV through TV Bro System WebView with the telemetry HUD;
+- five allowlisted streaming destinations with a compact telemetry HUD;
+- a typed launch contract for the separate `com.robpelo.browser` media browser;
+- an explicit TV Bro rollback route while the dedicated browser is built and
+  physically validated;
 - temporary access to the stock Peloton experience without changing the default
   HOME;
 - an upper-right settings menu with Android settings, telemetry diagnostics,
-  and TV Bro update checks.
+  browser-route selection, and TV Bro rollback update checks.
 
 RobPelo runs as a normal Android application. It does not require root,
 bootloader unlocking, firmware modification, or replacement of Peloton system
@@ -120,7 +118,28 @@ app/build/outputs/apk/debug/app-debug.apk
 The Gradle Wrapper is included, so a separate Gradle installation is not
 required.
 
-## Install and update TV Bro
+## Media browser and TV Bro rollback
+
+The replacement route targets the separate RobPelo Media Browser:
+
+```text
+Package: com.robpelo.browser
+Activity: com.robpelo.browser/.MediaViewerActivity
+Action: com.robpelo.browser.action.OPEN_MEDIA
+```
+
+The pinned Brave downstream overlay, build boundary, allowlists, and policy
+test are documented in [media-browser/README.md](media-browser/README.md).
+The full Brave/Chromium APK must be built in Brave's supported Linux Android
+environment and signed with the same release certificate as RobPelo. It is not
+produced by this repository's Gradle build.
+
+Until that APK passes physical validation, TV Bro remains the initial route.
+The settings menu can explicitly select **Use RobPelo Media Browser** after the
+new APK is installed. RobPelo persists that choice and never silently falls
+back between browser profiles.
+
+### Install and update TV Bro
 
 RobPelo checks TV Bro's official GitHub release at most once every 24 hours
 when HOME opens. If TV Bro is missing, RobPelo offers the official
@@ -232,14 +251,15 @@ The **Peloton Home** button opens the stock Peloton activation/home experience
 temporarily. It does not change the selected default HOME; pressing Home
 returns to RobPelo.
 
-The **YouTube** button launches YouTube explicitly in TV Bro and starts the HUD.
-TV Bro's external URL mode hides its action bar; its WebView profile retains
-the browser session.
+The **YouTube** button launches YouTube in the selected streaming browser and
+starts the HUD. TV Bro remains the initial route during browser validation.
+The settings menu can explicitly switch all five tiles to the
+signature-matched RobPelo Media Browser.
 
 ### Enable the Netflix HUD
 
 1. Open RobPelo.
-2. Tap **Netflix + HUD**.
+2. Tap **Netflix**.
 3. Android opens **Display over other apps**.
 4. Select **RobPelo** and enable the permission.
 5. Press Back until RobPelo launches Netflix.

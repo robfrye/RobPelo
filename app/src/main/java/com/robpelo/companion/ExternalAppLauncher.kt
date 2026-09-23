@@ -4,29 +4,15 @@ import android.content.Context
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import android.util.Log
+import com.robpelo.companion.browser.TvBroLauncher
 
 object ExternalAppLauncher {
-    private const val TV_BRO_PACKAGE = "com.phlox.tvwebbrowser"
     private val PELOTON_APP = ComponentName(
         "com.peloton.activity",
         "com.peloton.activation.ActivationActivity",
     )
-    private val TV_BRO_HOME = ComponentName(
-        TV_BRO_PACKAGE,
-        "com.phlox.tvwebbrowser.activity.main.MainActivity",
-    )
-
-    fun launchNetflix(context: Context): Boolean {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.netflix.com/browse")).apply {
-            component = TV_BRO_HOME
-            addCategory(Intent.CATEGORY_BROWSABLE)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        }
-        return launchIntent(context, intent, "Netflix in TV Bro")
-    }
 
     fun launchPeloton(context: Context): Boolean =
         launchIntent(
@@ -35,51 +21,11 @@ object ExternalAppLauncher {
             "Peloton",
         )
 
-    fun launchYouTubeInTvBro(context: Context): Boolean {
-        val youtubeUri = Uri.parse("https://m.youtube.com")
-        val intent = Intent(Intent.ACTION_VIEW, youtubeUri).apply {
-            component = TV_BRO_HOME
-            addCategory(Intent.CATEGORY_BROWSABLE)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        }
-        return launchIntent(context, intent, "YouTube in TV Bro")
-    }
-
-    fun launchHboMax(context: Context): Boolean {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.hbomax.com/")).apply {
-            component = TV_BRO_HOME
-            addCategory(Intent.CATEGORY_BROWSABLE)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        }
-        return launchIntent(context, intent, "HBO Max in TV Bro")
-    }
-
-    fun launchPrimeVideo(context: Context): Boolean {
-        val intent = Intent(
-            Intent.ACTION_VIEW,
-            Uri.parse("https://www.primevideo.com/region/na/"),
-        ).apply {
-            component = TV_BRO_HOME
-            addCategory(Intent.CATEGORY_BROWSABLE)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        }
-        return launchIntent(context, intent, "Prime Video in TV Bro")
-    }
-
-    fun launchAppleTv(context: Context): Boolean {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tv.apple.com/")).apply {
-            component = TV_BRO_HOME
-            addCategory(Intent.CATEGORY_BROWSABLE)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        }
-        return launchIntent(context, intent, "Apple TV in TV Bro")
-    }
-
     fun launchTvBroSetup(context: Context): Boolean =
         launchIntent(
-            context,
-            Intent(Intent.ACTION_MAIN).setComponent(TV_BRO_HOME),
-            "TV Bro setup",
+            context = context,
+            intent = Intent(Intent.ACTION_MAIN).setComponent(TvBroLauncher.HOME_COMPONENT),
+            destination = "TV Bro setup",
         )
 
     fun launchSettings(context: Context): Boolean =
