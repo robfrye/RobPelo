@@ -43,6 +43,8 @@ scripts/apply-media-browser-overlay.sh /path/to/brave-browser/src
 The complete Microsoft Dev Box/WSL checkout, build, signing, and authentication
 procedure is in
 [the Dev Box build runbook](../docs/DEVBOX_MEDIA_BROWSER_BUILD.md).
+The offline receiving checks and physical bike gates are in
+[the device validation procedure](../docs/MEDIA_BROWSER_DEVICE_VALIDATION.md).
 
 Set this GN argument for the Android build:
 

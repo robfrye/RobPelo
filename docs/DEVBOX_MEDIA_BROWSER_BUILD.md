@@ -387,7 +387,8 @@ Record:
 
 Do not connect or install on the Peloton yet. Return to the original RobPelo
 session with the authenticated APKs and recorded metadata. Device installation
-and physical validation are a separate gated step.
+and physical validation are a separate gated step documented in
+[the device validation procedure](./MEDIA_BROWSER_DEVICE_VALIDATION.md).
 
 ## Handoff prompt for the Dev Box
 

@@ -16,6 +16,8 @@ overlay and policy tests are implemented, but a complete Brave/Chromium APK has
 not yet been built or physically accepted. The x86-64 Linux build handoff is
 documented in
 [the Microsoft Dev Box runbook](./DEVBOX_MEDIA_BROWSER_BUILD.md).
+APK authentication, installation, and physical acceptance are documented in
+[the media-browser device validation procedure](./MEDIA_BROWSER_DEVICE_VALIDATION.md).
 
 ## Purpose
 
