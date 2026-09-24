@@ -7,10 +7,10 @@ package com.robpelo.browser;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import org.chromium.base.Log;
 import org.chromium.base.TerminationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity;
@@ -26,7 +26,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
     private static final String TAG = "RobPeloMedia";
     private static final int MAX_WEB_CONTENTS_RETRIES = 20;
 
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Handler mMediaHandler = new Handler(Looper.getMainLooper());
     private MediaDestination mDestination;
     private CustomTabActivityTabProvider.Observer mTabProviderObserver;
     private WebContentsObserver mWebContentsObserver;
@@ -82,7 +82,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
             mWebContentsObserver.observe(null);
             mWebContentsObserver = null;
         }
-        mHandler.removeCallbacksAndMessages(null);
+        mMediaHandler.removeCallbacksAndMessages(null);
         super.onDestroyInternal();
     }
 
@@ -93,7 +93,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
         WebContents webContents = tab.getWebContents();
         if (webContents == null) {
             if (mWebContentsRetries++ < MAX_WEB_CONTENTS_RETRIES) {
-                mHandler.postDelayed(
+                mMediaHandler.postDelayed(
                         () -> {
                             if (!isFinishing()) {
                                 observeTab(tab);
@@ -195,7 +195,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
         }
         mBlockingNavigation = true;
         Log.w(TAG, "Blocked top-level navigation outside the destination allowlist: " + url);
-        mHandler.post(
+        mMediaHandler.post(
                 () -> {
                     if (isFinishing()) {
                         return;

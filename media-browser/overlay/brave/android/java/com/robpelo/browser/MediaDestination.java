@@ -12,32 +12,32 @@ enum MediaDestination {
     NETFLIX(
             "netflix",
             "https://www.netflix.com/browse",
-            new String[] {"netflix.com"},
-            new String[] {"netflix.com"},
+            "netflix.com",
+            "netflix.com",
             false),
     YOUTUBE(
             "youtube",
             "https://m.youtube.com/",
-            new String[] {"youtube.com", "youtu.be", "google.com"},
-            new String[] {"youtube.com", "youtu.be"},
+            "youtube.com,youtu.be,google.com",
+            "youtube.com,youtu.be",
             false),
     HBO_MAX(
             "hbo_max",
             "https://play.hbomax.com/",
-            new String[] {"hbomax.com", "max.com"},
-            new String[] {"hbomax.com", "max.com"},
+            "hbomax.com,max.com",
+            "hbomax.com,max.com",
             true),
     PRIME_VIDEO(
             "prime_video",
             "https://www.primevideo.com/region/na/",
-            new String[] {"primevideo.com", "amazon.com"},
-            new String[] {"primevideo.com"},
+            "primevideo.com,amazon.com",
+            "primevideo.com",
             false),
     APPLE_TV(
             "apple_tv",
             "https://tv.apple.com/",
-            new String[] {"apple.com", "icloud.com"},
-            new String[] {"tv.apple.com"},
+            "apple.com,icloud.com",
+            "tv.apple.com",
             false);
 
     enum Presentation {
@@ -52,15 +52,15 @@ enum MediaDestination {
 
     private final String mServiceId;
     private final String mStartUrl;
-    private final String[] mAllowedDomains;
-    private final String[] mMediaDomains;
+    private final String mAllowedDomains;
+    private final String mMediaDomains;
     private final boolean mDesktopUserAgent;
 
     MediaDestination(
             String serviceId,
             String startUrl,
-            String[] allowedDomains,
-            String[] mediaDomains,
+            String allowedDomains,
+            String mediaDomains,
             boolean desktopUserAgent) {
         mServiceId = serviceId;
         mStartUrl = startUrl;
@@ -129,12 +129,12 @@ enum MediaDestination {
         }
     }
 
-    private static boolean matchesAny(String host, String[] domains) {
+    private static boolean matchesAny(String host, String domains) {
         if (host == null) {
             return false;
         }
         String normalizedHost = host.toLowerCase(Locale.ROOT);
-        for (String domain : domains) {
+        for (String domain : domains.split(",")) {
             if (normalizedHost.equals(domain) || normalizedHost.endsWith("." + domain)) {
                 return true;
             }
