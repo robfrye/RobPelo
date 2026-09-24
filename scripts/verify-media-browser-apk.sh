@@ -63,23 +63,41 @@ done
 
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/robpelo-media-verify.XXXXXX")"
 cleanup() {
-    rm -f "$temp_dir/badging.txt" "$temp_dir/manifest.xml"
+    rm -f "$temp_dir/badging.txt" "$temp_dir/manifest-tree.txt" "$temp_dir/manifest.xml"
     rmdir "$temp_dir"
 }
 trap cleanup EXIT
 
 "$apksigner" verify --verbose --print-certs "$media_apk" >/dev/null
 "$aapt2" dump badging "$media_apk" >"$temp_dir/badging.txt"
+"$aapt2" dump xmltree "$media_apk" --file AndroidManifest.xml \
+    >"$temp_dir/manifest-tree.txt"
 "$apkanalyzer" manifest print "$media_apk" >"$temp_dir/manifest.xml"
 
-package_name="$("$apkanalyzer" manifest application-id "$media_apk")"
-version_name="$("$apkanalyzer" manifest version-name "$media_apk")"
-version_code="$("$apkanalyzer" manifest version-code "$media_apk")"
-min_sdk="$("$apkanalyzer" manifest min-sdk "$media_apk")"
-target_sdk="$("$apkanalyzer" manifest target-sdk "$media_apk")"
+package_line="$(grep -m1 '^package:' "$temp_dir/badging.txt")"
+package_name="$(sed -n "s/^package: name='\\([^']*\\)'.*/\\1/p" <<<"$package_line")"
+version_code="$(
+    sed -n "s/^package: name='[^']*' versionCode='\\([^']*\\)'.*/\\1/p" \
+        <<<"$package_line"
+)"
+version_name="$(
+    sed -n \
+        "s/^package: name='[^']*' versionCode='[^']*' versionName='\\([^']*\\)'.*/\\1/p" \
+        <<<"$package_line"
+)"
+min_sdk="$(
+    sed -n 's/.*minSdkVersion[^=]*=\([0-9][0-9]*\)$/\1/p' \
+        "$temp_dir/manifest-tree.txt" |
+        head -1
+)"
+target_sdk="$(
+    sed -n 's/.*targetSdkVersion[^=]*=\([0-9][0-9]*\)$/\1/p' \
+        "$temp_dir/manifest-tree.txt" |
+        head -1
+)"
 signer="$(
     "$apksigner" verify --print-certs "$media_apk" |
-        sed -n 's/^Signer #1 certificate SHA-256 digest: //p' |
+        sed -n 's/^.*certificate SHA-256 digest: //p' |
         head -1
 )"
 
@@ -113,10 +131,14 @@ fi
 
 if [[ -n "$companion_apk" ]]; then
     "$apksigner" verify --verbose "$companion_apk" >/dev/null
-    companion_package="$("$apkanalyzer" manifest application-id "$companion_apk")"
+    companion_package="$(
+        "$aapt2" dump badging "$companion_apk" |
+            sed -n "s/^package:.*name='\\([^']*\\)'.*/\\1/p" |
+            head -1
+    )"
     companion_signer="$(
         "$apksigner" verify --print-certs "$companion_apk" |
-            sed -n 's/^Signer #1 certificate SHA-256 digest: //p' |
+            sed -n 's/^.*certificate SHA-256 digest: //p' |
             head -1
     )"
     if [[ "$companion_package" != "com.robpelo.companion" ]]; then

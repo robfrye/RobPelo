@@ -237,7 +237,7 @@ pnpm run build Debug \
   --target_android_output_format=apk \
   --android_override_version_name=1.95.104 \
   --use_remoteexec=false \
-  --gn 'chrome_public_manifest_package:"com.robpelo.browser"'
+  --gn 'chrome_public_manifest_package:"com.robpelo.browser" android_override_version_code:"429510404"'
 ```
 
 Do not add `is_official_build=true`; that requires Brave's private release
