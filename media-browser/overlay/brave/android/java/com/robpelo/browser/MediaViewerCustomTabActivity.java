@@ -5,7 +5,6 @@
 
 package com.robpelo.browser;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -35,11 +34,11 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
     private int mWebContentsRetries;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onPreCreate() {
         mDestination =
                 MediaDestination.fromServiceId(
                         getIntent().getStringExtra(MediaViewerActivity.EXTRA_SERVICE));
-        super.onCreate(savedInstanceState);
+        super.onPreCreate();
         if (mDestination == null) {
             Log.e(TAG, "Internal media viewer started without a valid destination");
             finish();
@@ -74,7 +73,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroyInternal() {
         if (mTabProviderObserver != null) {
             getCustomTabActivityTabProvider().removeObserver(mTabProviderObserver);
             mTabProviderObserver = null;
@@ -84,7 +83,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
             mWebContentsObserver = null;
         }
         mHandler.removeCallbacksAndMessages(null);
-        super.onDestroy();
+        super.onDestroyInternal();
     }
 
     private void observeTab(Tab tab) {

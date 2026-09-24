@@ -200,13 +200,22 @@ scripts/apply-media-browser-overlay.sh ~/src/brave-browser/src
 Review the resulting source state:
 
 ```bash
-git -C ~/src/brave-browser/src/brave status --short
-git -C ~/src/brave-browser/src status --short
-git -C ~/src/brave-browser/src/brave diff --check
-git -C ~/src/brave-browser/src diff --check
+git -C ~/src/brave-browser/src/brave status --short -- \
+  android/java/com/robpelo/browser \
+  android/brave_java_sources.gni \
+  android/java/AndroidManifest.xml
+git -C ~/src/brave-browser/src status --short -- \
+  chrome/android/java/AndroidManifest.xml
+git -C ~/src/brave-browser/src/brave diff --check -- \
+  android/java/com/robpelo/browser \
+  android/brave_java_sources.gni \
+  android/java/AndroidManifest.xml
+git -C ~/src/brave-browser/src diff --check -- \
+  chrome/android/java/AndroidManifest.xml
 ```
 
-Expected changes are limited to:
+The full Chromium working tree includes Brave's normal patch stack, so audit the
+overlay-managed paths above. Expected overlay changes are limited to:
 
 - three `com.robpelo.browser` Java source files;
 - `src/brave/android/brave_java_sources.gni`;
