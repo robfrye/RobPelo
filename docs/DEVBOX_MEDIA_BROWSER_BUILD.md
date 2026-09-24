@@ -235,6 +235,7 @@ pnpm run build Debug \
   --target_os=android \
   --target_arch=arm64 \
   --target_android_output_format=apk \
+  --android_override_version_name=1.95.104 \
   --use_remoteexec=false \
   --gn 'chrome_public_manifest_package:"com.robpelo.browser"'
 ```
