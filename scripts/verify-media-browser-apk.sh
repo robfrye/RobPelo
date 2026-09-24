@@ -133,7 +133,7 @@ if [[ -n "$companion_apk" ]]; then
     "$apksigner" verify --verbose "$companion_apk" >/dev/null
     companion_package="$(
         "$aapt2" dump badging "$companion_apk" |
-            sed -n "s/^package:.*name='\\([^']*\\)'.*/\\1/p" |
+            sed -n "s/^package: name='\\([^']*\\)'.*/\\1/p" |
             head -1
     )"
     companion_signer="$(
