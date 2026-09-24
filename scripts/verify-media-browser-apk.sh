@@ -194,8 +194,12 @@ require(
     "MediaViewerCustomTabActivity must not be exported.",
 )
 
+require(
+    "com.google.android.apps.chrome.IntentDispatcher" not in components,
+    "The general-purpose URL dispatcher must be absent.",
+)
+
 for name in (
-    "com.google.android.apps.chrome.IntentDispatcher",
     "com.google.android.apps.chrome.Main",
     "org.chromium.chrome.browser.ChromeTabbedActivity",
 ):

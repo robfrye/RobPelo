@@ -362,8 +362,8 @@ verify:
 - `com.robpelo.browser.MediaViewerActivity` is exported;
 - it requires `com.robpelo.browser.permission.OPEN_MEDIA`;
 - `MediaViewerCustomTabActivity` is not exported;
-- the primary browser launcher, tabbed-browser activity, and URL dispatcher are
-  not exported;
+- the primary browser launcher and tabbed-browser activity are not exported;
+- the general-purpose URL dispatcher is absent;
 - the package does not qualify for the general browser role;
 - no arbitrary-URL media intent is exported.
 

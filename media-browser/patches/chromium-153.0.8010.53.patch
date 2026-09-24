@@ -14,14 +14,22 @@ index 6967cc4776d1f..d82b07a7eaeb7 100644
  
  
      <!-- Needed for
-@@ -250,6 +254,6 @@ found in the LICENSE file.
+@@ -249,6 +253,7 @@ found in the LICENSE file.
+             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density">
+         </activity>
++        {% if manifest_package != "com.robpelo.browser" %}
          <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
              android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
--            android:exported="true">
-+            android:exported="false">
+             android:exported="true">
              <intent-filter>
-                 <action android:name="android.intent.action.MAIN" />
-                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
+@@ -380,6 +385,7 @@ found in the LICENSE file.
+             <meta-data android:name="android.app.searchable"
+                 android:resource="@xml/searchable" />
+         </activity-alias>
++        {% endif %}
+ 
+         <activity android:name="org.chromium.chrome.browser.media.MediaLauncherActivity"
+             android:theme="@style/Theme.BrowserUI.NoDisplay"
 @@ -595,7 +599,7 @@ found in the LICENSE file.
          <!-- ChromeTabbedActivity related -->
          <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
