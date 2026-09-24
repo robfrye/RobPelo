@@ -160,7 +160,7 @@ manifest = ET.parse(sys.argv[1]).getroot()
 
 
 def attr(element, name):
-    return element.get(ANDROID + name)
+    return element.get(ANDROID + name) or element.get(name)
 
 
 def require(condition, message):
