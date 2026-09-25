@@ -262,6 +262,36 @@ At the user's direction, the remaining Netflix and Apple TV protected-title
 checks and the remaining Brave HUD/Back checks were skipped. They are not
 recorded as passes.
 
+## RobPelo Media Browser Debug build rejection
+
+The first Brave-derived `com.robpelo.browser` APK was installed on 2026-09-25:
+
+- package `com.robpelo.browser`;
+- version `1.95.104` / version code `429510404`;
+- minimum SDK 29, target SDK 36;
+- arm64-v8a only;
+- signature permission and signer matched RobPelo;
+- the explicit media activity resolved correctly;
+- no general HTTPS handler was exposed;
+- RobPelo remained HOME;
+- Firefox remained the general browser-role holder;
+- TV Bro and Firefox remained installed;
+- Prime Video opened without starting the HUD;
+- Prime Video website sign-in succeeded.
+
+The build was rejected before protected-title acceptance because it was too
+laggy for service navigation. Official Brave, Firefox, and TV Bro were not
+running. Under navigation load, the Debug build's browser, renderer,
+privileged process, and zygote consumed roughly 740 MB total PSS and the device
+was already using roughly 570 MB of swap. A cold browser restart did not make
+the page usable.
+
+The browser was force-stopped, RobPelo HOME was restored, and no ride service
+or Affernet binding remained active. The browser package and authenticated
+profile were retained for reversible diagnosis. Future device testing requires
+an optimized non-official `Static` build; do not repeat acceptance testing with
+the Debug artifact.
+
 ## Reboot validation
 
 A normal `adb reboot` was tested after RobPelo became the default HOME:

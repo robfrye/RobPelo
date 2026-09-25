@@ -4,6 +4,11 @@ Use this procedure only after the Dev Box produces an APK and
 `scripts/verify-media-browser-apk.sh` passes. It preserves TV Bro and Firefox as
 rollback while the replacement browser is tested.
 
+Only an optimized `Static` browser build is eligible for physical acceptance.
+The first Debug build installed and launched successfully but consumed roughly
+740 MB PSS across its browser processes under navigation load and was too laggy
+to use on the approximately 2 GB reference bike.
+
 Do not uninstall a browser, clear browser data, change HOME, change the general
 browser role, disable a Peloton package, or modify a Peloton package during
 this procedure.

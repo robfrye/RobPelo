@@ -226,12 +226,15 @@ Stop and review any unrelated modification.
 
 ## 6. Build the ARM64 APK
 
-Run the build from brave-core:
+Run the optimized non-official build from brave-core. Use `Static`, not
+`Debug`: the Debug browser exceeded the reference bike's usable memory budget
+and was too laggy for navigation. Do not use `Release`, which enables Brave's
+official-build configuration and private service requirements.
 
 ```bash
 cd ~/src/brave-browser/src/brave
 export JAVA_OPTS="-Xmx10G -Xms1G"
-pnpm run build Debug \
+pnpm run build Static \
   --target_os=android \
   --target_arch=arm64 \
   --target_android_output_format=apk \
