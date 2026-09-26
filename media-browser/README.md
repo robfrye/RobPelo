@@ -20,7 +20,10 @@ Brave's `FullScreenCustomTabActivity`. The internal activity:
 - hides the toolbar on allowlisted playback pages;
 - shows Brave's origin/TLS toolbar for login, account, and payment pages;
 - rejects top-level navigation outside the destination allowlist;
-- applies desktop UA mode only on HBO Max service origins;
+- applies desktop UA mode only on HBO Max and Prime Video media origins;
+- keeps authentication origins on normal current-Chromium behavior;
+- surfaces Chromium tab-modal prompts even while ordinary browser controls are
+  hidden;
 - returns to RobPelo when its close control or terminal Back action finishes;
 - exits with a visible error after a renderer crash.
 

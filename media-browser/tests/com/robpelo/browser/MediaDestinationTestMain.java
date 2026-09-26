@@ -67,6 +67,19 @@ public final class MediaDestinationTestMain {
         assertFalse(
                 MediaDestination.YOUTUBE.usesDesktopUserAgent(
                         "https://m.youtube.com/"));
+        assertTrue(
+                MediaDestination.PRIME_VIDEO.usesDesktopUserAgent(
+                        "https://app.primevideo.com/watch"));
+        assertTrue(
+                MediaDestination.PRIME_VIDEO.usesDesktopUserAgent(
+                        MediaDestination.PRIME_VIDEO.getStartUrl()));
+        assertSame(
+                MediaDestination.Presentation.FRAMELESS,
+                MediaDestination.PRIME_VIDEO.presentationForUrl(
+                        "https://app.primevideo.com/watch"));
+        assertFalse(
+                MediaDestination.PRIME_VIDEO.usesDesktopUserAgent(
+                        "https://www.amazon.com/ap/signin"));
     }
 
     private static void assertSame(Object expected, Object actual) {

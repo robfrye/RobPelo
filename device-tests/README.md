@@ -292,6 +292,52 @@ profile were retained for reversible diagnosis. Future device testing requires
 an optimized non-official `Static` build; do not repeat acceptance testing with
 the Debug artifact.
 
+## RobPelo Media Browser Static build findings
+
+The optimized non-official Static build was installed in place on 2026-09-25:
+
+- APK SHA-256
+  `76c95e476e079a83bd22c648b40d714af3c35ffdb646733ec4681b10171a4092`;
+- package, version, SDK, ABI, signer, and restricted manifest contract passed
+  independent Dev Box and Mac verification;
+- `adb install -r` preserved browser profile inode `472393` and the existing
+  Prime Video authentication;
+- RobPelo remained HOME;
+- Firefox remained the general browser-role holder;
+- TV Bro and Firefox remained installed;
+- no general HTTPS handler was exposed;
+- the no-HUD Prime Video setup launch worked;
+- Prime Video navigation reached a show page.
+
+Static improved memory pressure but remained heavy. During the protected-title
+attempt its browser, renderer, privileged process, and zygote used roughly
+660 MB total PSS, compared with roughly 740 MB for Debug.
+
+Two browser-integration failures blocked protected playback:
+
+1. Chromium tab-modal prompts displayed their dimming scrim while
+   `tab_modal_dialog_container` remained zero-sized in the frameless activity.
+   Pressing Back dismissed the invisible modal and scrim, proving the renderer
+   was not frozen, but also dismissed the required permission.
+2. Prime's mobile presentation navigated to an
+   `intent://app.primevideo.com/watch` URL targeting
+   `com.amazon.avod.thirdpartyclient`. The installed native Prime app briefly
+   became foreground and triggered Peloton's subscriber-only enforcement.
+   The media browser rejected the top-level intent but did not prevent
+   Chromium's earlier external-app handoff.
+
+The approved temporary `com.peloton.activity` force-stop removed all Peloton
+overlay windows, but Prime still attempted the native-app handoff and the
+hidden modal returned. A normal reboot restored the Peloton process, RobPelo
+HOME, Firefox's browser role, and the idle no-service state.
+
+The next build must:
+
+- use desktop UA on Prime Video media origins while leaving Amazon
+  authentication origins on the normal UA;
+- display Chromium tab-modal prompts in a full-size visible container while
+  ordinary browser chrome remains hidden.
+
 ## Reboot validation
 
 A normal `adb reboot` was tested after RobPelo became the default HOME:

@@ -155,8 +155,11 @@ For each destination verify:
 - Back navigates within the service, then returns to RobPelo;
 - Home returns directly to RobPelo.
 
-HBO Max must use desktop UA only on HBO Max media origins. Authentication
-origins must retain normal current-Chromium behavior.
+HBO Max and Prime Video must use desktop UA only on their media origins.
+Authentication origins must retain normal current-Chromium behavior. Prime's
+mobile presentation attempts an `intent://` handoff to its installed native
+app, which triggers Peloton subscription enforcement instead of browser
+playback.
 
 Do not capture protected video frames.
 
