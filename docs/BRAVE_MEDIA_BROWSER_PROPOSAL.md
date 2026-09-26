@@ -12,9 +12,11 @@ waived and are not recorded as passes.
 Stage 2 source work now lives under [`media-browser/`](../media-browser/). The
 HOME APK uses the typed `com.robpelo.browser/.MediaViewerActivity` contract and
 retains TV Bro as an explicit persisted rollback route. The pinned Brave source
-overlay and policy tests are implemented, but a complete Brave/Chromium APK has
-not yet been built or physically accepted. The x86-64 Linux build handoff is
-documented in
+overlay and policy tests are implemented. The r3 Static APK has passed Prime
+Video authentication, protected playback, fullscreen, HUD, Back/Home, process
+restart, and reboot checks. The remaining service matrix and the one-time
+Widevine restart caveat still block final decommissioning. The x86-64 Linux
+build handoff is documented in
 [the Microsoft Dev Box runbook](./DEVBOX_MEDIA_BROWSER_BUILD.md).
 APK authentication, installation, and physical acceptance are documented in
 [the media-browser device validation procedure](./MEDIA_BROWSER_DEVICE_VALIDATION.md).

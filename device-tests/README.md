@@ -351,6 +351,45 @@ The next build must therefore:
 - retain the full-size visible Chromium tab-modal fallback while ordinary
   browser chrome remains hidden.
 
+### r3 Prime Video acceptance
+
+The r3 Static build implemented those changes and passed the Prime Video
+physical checks:
+
+- APK SHA-256
+  `d0f828a88a84c51d656eef66ef800a7a3be61e5b613680f18316ff268ecb9d0c`;
+- installation preserved profile inode `472393`;
+- the Widevine authorization dialog was visible and interactive;
+- the one-time authorization restarted the browser process and opened
+  `com.google.android.apps.chrome.Main` inside `com.robpelo.browser`;
+- returning to RobPelo and relaunching the media activity preserved the
+  authorization;
+- Prime website authentication persisted;
+- protected video and audio played smoothly;
+- fullscreen and the RobPelo telemetry HUD worked together;
+- `com.amazon.avod.thirdpartyclient` remained stopped during playback;
+- closing the HUD removed the overlay, foreground ride service, and RobPelo
+  Affernet binding while leaving the browser alive;
+- Back returned from playback to Prime and then to RobPelo HOME without a
+  general browser screen;
+- force-stop/relaunch preserved the explicit media-browser route,
+  authentication, protected playback, and HUD behavior;
+- a normal reboot preserved HOME, Firefox's browser role, the media-browser
+  route, authentication, protected playback, and HUD behavior;
+- TV Bro and Firefox remained installed throughout.
+
+Prime's Play/Pause controls were noticeably laggy, but an immediate controlled
+comparison with official Brave showed similarly laggy controls on the same
+title. This is therefore treated as a Prime/reference-device limitation rather
+than a RobPelo regression. During r3 playback with the HUD, the browser
+processes used roughly 786 MB total PSS and the companion used roughly 102 MB
+PSS.
+
+The one-time Widevine authorization restart exposing the package's ordinary
+tabbed browser is retained as a setup-flow caveat. Normal tile launches,
+playback, Back, Home, process restart, and reboot did not expose the general
+browser surface.
+
 ## Reboot validation
 
 A normal `adb reboot` was tested after RobPelo became the default HOME:
