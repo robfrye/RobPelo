@@ -67,10 +67,10 @@ public final class MediaDestinationTestMain {
         assertFalse(
                 MediaDestination.YOUTUBE.usesDesktopUserAgent(
                         "https://m.youtube.com/"));
-        assertTrue(
+        assertFalse(
                 MediaDestination.PRIME_VIDEO.usesDesktopUserAgent(
                         "https://app.primevideo.com/watch"));
-        assertTrue(
+        assertFalse(
                 MediaDestination.PRIME_VIDEO.usesDesktopUserAgent(
                         MediaDestination.PRIME_VIDEO.getStartUrl()));
         assertSame(

@@ -12,7 +12,8 @@ brave_src="$chromium_src/brave"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 overlay_root="$repo_root/media-browser/overlay/brave"
 brave_patch="$repo_root/media-browser/patches/brave-core-v1.95.104.patch"
-chromium_patch="$repo_root/media-browser/patches/chromium-153.0.8010.53.patch"
+chromium_manifest_patch="$repo_root/media-browser/patches/chromium-153.0.8010.53.patch"
+chromium_external_intents_patch="$repo_root/media-browser/patches/chromium-external-intents-153.0.8010.53.patch"
 
 if [[ ! -d "$brave_src/.git" ]]; then
     echo "expected a Brave checkout at $brave_src" >&2
@@ -41,23 +42,27 @@ if [[ "$actual_chromium_version" != "153.0.8010.53" ]]; then
     exit 1
 fi
 
-if git -C "$brave_src" apply --reverse --check "$brave_patch" 2>/dev/null &&
-    git -C "$chromium_src" apply --reverse --check "$chromium_patch" 2>/dev/null; then
-    mkdir -p "$brave_src/android/java/com/robpelo/browser"
-    cp "$overlay_root/android/java/com/robpelo/browser/"*.java \
-        "$brave_src/android/java/com/robpelo/browser/"
-    echo "The RobPelo media-browser overlay is already applied."
-    exit 0
-fi
-
-git -C "$brave_src" apply --check "$brave_patch"
-git -C "$chromium_src" apply --check "$chromium_patch"
+apply_patch_if_needed() {
+    local source_root="$1"
+    local patch_file="$2"
+    if git -C "$source_root" apply --reverse --check "$patch_file" 2>/dev/null; then
+        echo "Already applied: $(basename "$patch_file")"
+        return
+    fi
+    if ! git -C "$source_root" apply --check "$patch_file"; then
+        echo "Patch cannot be applied cleanly: $patch_file" >&2
+        exit 1
+    fi
+    git -C "$source_root" apply "$patch_file"
+    echo "Applied: $(basename "$patch_file")"
+}
 
 mkdir -p "$brave_src/android/java/com/robpelo/browser"
 cp "$overlay_root/android/java/com/robpelo/browser/"*.java \
     "$brave_src/android/java/com/robpelo/browser/"
 
-git -C "$brave_src" apply "$brave_patch"
-git -C "$chromium_src" apply "$chromium_patch"
+apply_patch_if_needed "$brave_src" "$brave_patch"
+apply_patch_if_needed "$chromium_src" "$chromium_manifest_patch"
+apply_patch_if_needed "$chromium_src" "$chromium_external_intents_patch"
 echo "Applied the RobPelo media-browser overlay."
 echo "Build with chrome_public_manifest_package=\"com.robpelo.browser\"."

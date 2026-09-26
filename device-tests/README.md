@@ -331,12 +331,25 @@ overlay windows, but Prime still attempted the native-app handoff and the
 hidden modal returned. A normal reboot restored the Peloton process, RobPelo
 HOME, Firefox's browser role, and the idle no-service state.
 
-The next build must:
+The first follow-up build displayed tab-modal prompts correctly and prevented
+the native-app handoff by forcing Prime's desktop presentation, but Prime then
+returned `Video Unavailable`. A controlled comparison proved:
 
-- use desktop UA on Prime Video media origins while leaving Amazon
-  authentication origins on the normal UA;
-- display Chromium tab-modal prompts in a full-size visible container while
-  ordinary browser chrome remains hidden.
+- official Brave remained foreground while the same protected title played;
+- `com.amazon.avod.thirdpartyclient` remained stopped;
+- official Brave's **Desktop site** setting was off;
+- official Brave logged the same unsupported VP8 probes and Widevine cleanup
+  warnings while playback succeeded, so those messages were not the failure.
+
+The next build must therefore:
+
+- keep Prime Video on its normal user agent;
+- disable external-app intent requests for the dedicated
+  `com.robpelo.browser` Custom Tab so Prime cannot hand off to its native app;
+- unwrap and validate Prime's embedded HTTPS watch target from the blocked
+  `intent://` navigation, then load it in the existing tab;
+- retain the full-size visible Chromium tab-modal fallback while ordinary
+  browser chrome remains hidden.
 
 ## Reboot validation
 

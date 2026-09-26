@@ -1,0 +1,53 @@
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabDelegateFactory.java b/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabDelegateFactory.java
+--- a/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabDelegateFactory.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabDelegateFactory.java
+@@ -13,12 +13,14 @@ import android.content.ComponentName;
+ import android.content.Intent;
+ import android.content.pm.ResolveInfo;
+ import android.graphics.Rect;
++import android.provider.Browser;
+ import android.text.TextUtils;
+ 
+ import androidx.annotation.VisibleForTesting;
+ 
+ import org.chromium.base.ApiCompatibilityUtils;
+ import org.chromium.base.CallbackUtils;
++import org.chromium.base.IntentUtils;
+ import org.chromium.base.Log;
+ import org.chromium.base.supplier.SupplierUtils;
+ import org.chromium.blink.mojom.DisplayMode;
+@@ -27,5 +29,6 @@ import org.chromium.build.annotations.NullMarked;
+ import org.chromium.build.annotations.Nullable;
+ import org.chromium.cc.input.BrowserControlsState;
++import org.chromium.chrome.browser.IntentHandler;
+ import org.chromium.chrome.browser.app.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
+ import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+ import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+@@ -131,6 +131,10 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
+         @Override
+         public boolean shouldDisableExternalIntentRequestsForUrl(
+                 ExternalNavigationParams params, Intent intent) {
++            if (isRobPeloMediaIntent()) {
++                return true;
++            }
++
+             if (shouldSelfNavigationLaunchAsMultipleTask(params)) {
+                 return false;
+             }
+@@ -145,5 +149,16 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
+             return isUrlInVerifiedScope;
+         }
+ 
++        private boolean isRobPeloMediaIntent() {
++            if (mIntentDataProvider == null) {
++                return false;
++            }
++            Intent launchIntent = mIntentDataProvider.getIntent();
++            return IntentHandler.wasIntentSenderChrome(launchIntent)
++                    && "com.robpelo.browser".equals(
++                            IntentUtils.safeGetStringExtra(
++                                    launchIntent, Browser.EXTRA_APPLICATION_ID));
++        }
++
+         @Override
+         public boolean shouldSelfNavigationLaunchAsMultipleTask(ExternalNavigationParams params) {

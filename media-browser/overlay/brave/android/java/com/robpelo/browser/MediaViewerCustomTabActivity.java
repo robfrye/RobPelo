@@ -5,8 +5,10 @@
 
 package com.robpelo.browser;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -29,6 +32,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 /** Chrome-free media surface backed by Brave's normal persistent profile. */
 public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActivity {
     private static final String TAG = "RobPeloMedia";
+    private static final int MAX_REPEATED_INTENT_TARGETS = 3;
+    private static final long REPEATED_INTENT_WINDOW_MS = 5_000;
     private static final int MAX_WEB_CONTENTS_RETRIES = 20;
 
     private final Handler mMediaHandler = new Handler(Looper.getMainLooper());
@@ -41,6 +46,9 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
     private Tab mCurrentTab;
     private WebContentsObserver mWebContentsObserver;
     private boolean mBlockingNavigation;
+    private int mRepeatedIntentTargetCount;
+    private String mLastIntentTarget;
+    private long mLastIntentTargetAtMs;
     private int mWebContentsRetries;
 
     @Override
@@ -213,6 +221,7 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
 
     private void observeTab(Tab tab) {
         mCurrentTab = tab;
+        mBlockingNavigation = false;
         if (mWebContentsObserver != null) {
             mWebContentsObserver.observe(null);
         }
@@ -244,6 +253,12 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
                         if (url == null || url.isEmpty()) {
                             return;
                         }
+                        if (handleIntentNavigation(tab, url)) {
+                            return;
+                        }
+                        if (mBlockingNavigation) {
+                            return;
+                        }
                         if (mDestination.presentationForUrl(url)
                                 == MediaDestination.Presentation.REJECT) {
                             blockNavigation(tab, url);
@@ -254,13 +269,74 @@ public final class MediaViewerCustomTabActivity extends FullScreenCustomTabActiv
 
                     @Override
                     public void didRedirectNavigation(NavigationHandle navigationHandle) {
+                        if (!navigationHandle.isInPrimaryMainFrame()) {
+                            return;
+                        }
                         String url = navigationHandle.getUrl().getSpec();
                         if (url != null
                                 && !url.isEmpty()
+                                && !handleIntentNavigation(tab, url)
+                                && !mBlockingNavigation
                                 && mDestination.presentationForUrl(url)
                                         == MediaDestination.Presentation.REJECT) {
                             blockNavigation(tab, url);
                         }
+                    }
+
+                    private boolean handleIntentNavigation(Tab tab, String url) {
+                        if (!url.startsWith("intent:")) {
+                            return false;
+                        }
+
+                        final String targetUrl;
+                        try {
+                            targetUrl = Intent.parseUri(url, Intent.URI_INTENT_SCHEME).getDataString();
+                        } catch (Exception exception) {
+                            Log.e(TAG, "Rejected malformed intent navigation", exception);
+                            blockNavigation(tab, url);
+                            return true;
+                        }
+                        if (targetUrl == null
+                                || mDestination.presentationForUrl(targetUrl)
+                                        == MediaDestination.Presentation.REJECT) {
+                            blockNavigation(tab, url);
+                            return true;
+                        }
+
+                        long now = SystemClock.elapsedRealtime();
+                        if (targetUrl.equals(mLastIntentTarget)
+                                && now - mLastIntentTargetAtMs <= REPEATED_INTENT_WINDOW_MS) {
+                            mRepeatedIntentTargetCount++;
+                        } else {
+                            mLastIntentTarget = targetUrl;
+                            mRepeatedIntentTargetCount = 1;
+                        }
+                        mLastIntentTargetAtMs = now;
+                        if (mRepeatedIntentTargetCount > MAX_REPEATED_INTENT_TARGETS) {
+                            Log.e(TAG, "Rejected repeated external-app navigation loop");
+                            blockNavigation(tab, url);
+                            return true;
+                        }
+
+                        mBlockingNavigation = true;
+                        mMediaHandler.post(
+                                () -> {
+                                    try {
+                                        if (isFinishing() || tab.isDestroyed()) {
+                                            return;
+                                        }
+                                        WebContents webContents = tab.getWebContents();
+                                        if (webContents == null) {
+                                            return;
+                                        }
+                                        Log.i(TAG, "Keeping external-app navigation in the media browser");
+                                        webContents.stop();
+                                        tab.loadUrl(new LoadUrlParams(targetUrl));
+                                    } finally {
+                                        mBlockingNavigation = false;
+                                    }
+                                });
+                        return true;
                     }
 
                     @Override

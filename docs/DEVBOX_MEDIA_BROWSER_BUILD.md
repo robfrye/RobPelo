@@ -117,6 +117,7 @@ Confirm that the media-browser work is present:
 test -f media-browser/overlay/brave/android/java/com/robpelo/browser/MediaViewerActivity.java
 test -f media-browser/patches/brave-core-v1.95.104.patch
 test -f media-browser/patches/chromium-153.0.8010.53.patch
+test -f media-browser/patches/chromium-external-intents-153.0.8010.53.patch
 test -x scripts/apply-media-browser-overlay.sh
 test -x scripts/test-media-browser-policy.sh
 ```

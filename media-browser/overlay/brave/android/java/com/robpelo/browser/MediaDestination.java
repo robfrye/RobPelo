@@ -32,7 +32,7 @@ enum MediaDestination {
             "https://www.primevideo.com/region/na/",
             "primevideo.com,amazon.com",
             "primevideo.com",
-            true),
+            false),
     APPLE_TV(
             "apple_tv",
             "https://tv.apple.com/",

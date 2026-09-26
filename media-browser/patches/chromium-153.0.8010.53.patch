@@ -1,4 +1,4 @@
-# Chromium 153.0.8010.53 manifest hardening for the dedicated media package.
+# Chromium 153.0.8010.53 hardening for the dedicated media package.
 diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
 index 6967cc4776d1f..d82b07a7eaeb7 100644
 --- a/chrome/android/java/AndroidManifest.xml
