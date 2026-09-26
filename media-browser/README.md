@@ -52,6 +52,8 @@ procedure is in
 [the Dev Box build runbook](../docs/DEVBOX_MEDIA_BROWSER_BUILD.md).
 The offline receiving checks and physical bike gates are in
 [the device validation procedure](../docs/MEDIA_BROWSER_DEVICE_VALIDATION.md).
+Compiler, packaging, and feature-removal options are evaluated in
+[the Brave slimming investigation](../docs/BRAVE_SLIMMING_INVESTIGATION.md).
 
 Set this GN argument for the Android build:
 

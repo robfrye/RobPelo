@@ -20,6 +20,8 @@ build handoff is documented in
 [the Microsoft Dev Box runbook](./DEVBOX_MEDIA_BROWSER_BUILD.md).
 APK authentication, installation, and physical acceptance are documented in
 [the media-browser device validation procedure](./MEDIA_BROWSER_DEVICE_VALIDATION.md).
+Build-size and runtime optimization findings are documented in
+[the Brave slimming investigation](./BRAVE_SLIMMING_INVESTIGATION.md).
 
 ## Purpose
 
